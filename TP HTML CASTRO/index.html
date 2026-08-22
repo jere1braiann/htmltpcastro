@@ -11,73 +11,27 @@
     
     <!-- CSS Integrado -->
     <style>
-        /* Variables y ajustes generales */
-        :root {
-            --primary-color: #1565c0;
-            --bg-color: #f4f6f8;
-        }
-        body { 
-            display: flex; 
-            min-height: 100vh; 
-            flex-direction: column; 
-            background-color: var(--bg-color); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        :root { --primary-color: #1565c0; --bg-color: #f4f6f8; }
+        body { display: flex; min-height: 100vh; flex-direction: column; background-color: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         main { flex: 1 0 auto; padding: 20px 0; }
         
-        /* Utilidades de vistas (SPA) */
         .vista { display: none; }
         .vista.activa { display: block; animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .panel-restringido { display: none; }
         
-        /* Componentes visuales */
-        .hero { 
-            background: linear-gradient(135deg, #1976d2 0%, var(--primary-color) 100%); 
-            color: white; 
-            padding: 50px 20px; 
-            text-align: center; 
-            margin-bottom: 30px; 
-            border-radius: 8px;
-        }
-        .card-menu { 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            height: 100%; 
-            border-radius: 10px; 
-            border: 1px solid #e0e0e0;
-        }
-        .card-menu:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
-            border-color: var(--primary-color);
-        }
+        .hero { background: linear-gradient(135deg, #1976d2 0%, var(--primary-color) 100%); color: white; padding: 50px 20px; text-align: center; margin-bottom: 30px; border-radius: 8px; }
+        .card-menu { cursor: pointer; transition: all 0.3s ease; height: 100%; border-radius: 10px; border: 1px solid #e0e0e0; }
+        .card-menu:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-color: var(--primary-color); }
         
-        /* Módulo Electoral */
-        .terminal-votacion { 
-            background-color: #263238; 
-            color: white; 
-            padding: 40px 20px; 
-            border-radius: 12px; 
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.6); 
-        }
-        .boleta-preview { 
-            padding: 15px; 
-            border-radius: 8px; 
-            color: white; 
-            margin-bottom: 10px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .urna-counter {
-            font-size: 5rem;
-            font-weight: bold;
-            margin: 10px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+        .terminal-votacion { background-color: #263238; color: white; padding: 40px 20px; border-radius: 12px; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
+        .boleta-preview { padding: 15px; border-radius: 8px; color: white; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); }
+        .urna-counter { font-size: 5rem; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        
+        /* Estilos específicos para Moderación */
+        .badge-estado { padding: 5px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.8rem; }
+        .estado-pendiente { background-color: #ff9800; }
+        .estado-aprobado { background-color: #4caf50; }
     </style>
 </head>
 <body>
@@ -89,10 +43,9 @@
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li><a href="#" onclick="navegar('inicio')">Inicio</a></li>
                 <li><a href="#" onclick="navegar('elecciones-portal')">Elecciones</a></li>
-                <li><a href="#" onclick="navegar('actas')">Libro de Actas</a></li>
+                <li id="nav-item-actas" class="panel-restringido"><a href="#" onclick="navegar('actas')">Libro de Actas (Privado)</a></li>
                 <li><a href="#" onclick="navegar('foro')">Foro</a></li>
                 
-                <!-- Gestión de Accesos -->
                 <li id="nav-login-btn"><a href="#" onclick="navegar('login')" class="btn white blue-text text-darken-3" style="font-weight:bold; margin-left: 15px; border-radius: 20px;">Acceso Institucional</a></li>
                 <li id="nav-user-info" style="display:none;">
                     <a href="#" class="yellow-text text-lighten-2">
@@ -107,7 +60,7 @@
 
     <main id="app" class="container">
         
-        <!-- =================== LOGIN MULTI-ROL =================== -->
+        <!-- =================== LOGIN =================== -->
         <section id="vista-login" class="vista">
             <div class="row">
                 <div class="col s12 m6 offset-m3">
@@ -115,14 +68,12 @@
                         <div class="card-content center-align">
                             <i class="material-icons large blue-text">admin_panel_settings</i>
                             <h4 class="card-title" style="font-weight:bold;">Acceso Restringido</h4>
-                            <p class="grey-text">Ingresa tu credencial oficial para administrar el sistema.</p>
+                            <p class="grey-text">Ingresa tu credencial oficial (Comisión Directiva o Junta Electoral).</p>
                             <br>
                             <input type="password" id="input-credencial" placeholder="Ej: CD-IPEM38 o JUNTA-IPEM38" class="center-align" style="font-weight:bold; font-size: 1.2rem; letter-spacing: 2px;">
                             <button class="btn blue darken-2 w100 waves-effect waves-light" style="border-radius: 8px; margin-top: 15px;" onclick="iniciarSesion()">Validar Credencial</button>
                             <p id="error-login-inst" class="red-text" style="display:none; font-weight:bold; margin-top: 15px;">Credencial inválida o no autorizada.</p>
-                            <br>
-                            <div class="divider"></div>
-                            <br>
+                            <br><div class="divider"></div><br>
                             <button class="btn-flat grey-text" onclick="resetearSistema()">Restablecer Base de Datos Local</button>
                         </div>
                     </div>
@@ -134,12 +85,13 @@
         <section id="vista-inicio" class="vista activa">
             <div class="hero z-depth-2">
                 <h2 style="font-weight:bold;">Bienvenido al Centro Digital</h2>
-                <p style="font-size: 1.2rem;">Plataforma unificada para la gestión participativa y democrática.</p>
+                <p style="font-size: 1.2rem;">Plataforma unificada para la gestión participativa.</p>
             </div>
             <div class="row">
-                <div class="col s12 m4"><div class="card card-menu center-align" onclick="navegar('elecciones-portal')"><div class="card-content"><i class="material-icons large blue-text text-darken-2">how_to_vote</i><h5 class="card-title">Elecciones</h5><p class="grey-text">Junta y Escrutinio (Res. 124/10)</p></div></div></div>
-                <div class="col s12 m4"><div class="card card-menu center-align" onclick="navegar('actas')"><div class="card-content"><i class="material-icons large blue-text text-darken-2">menu_book</i><h5 class="card-title">Libro de Actas</h5><p class="grey-text">Resoluciones y Asambleas</p></div></div></div>
-                <div class="col s12 m4"><div class="card card-menu center-align" onclick="navegar('foro')"><div class="card-content"><i class="material-icons large blue-text text-darken-2">forum</i><h5 class="card-title">Foro Oficial</h5><p class="grey-text">Proyectos y Votaciones Inter-Centros</p></div></div></div>
+                <div class="col s12 m4"><div class="card card-menu center-align" onclick="navegar('elecciones-portal')"><div class="card-content"><i class="material-icons large blue-text text-darken-2">how_to_vote</i><h5 class="card-title">Elecciones</h5><p class="grey-text">Junta y Escrutinio</p></div></div></div>
+                <!-- El botón de Actas ahora advierte que es privado -->
+                <div class="col s12 m4"><div class="card card-menu center-align" onclick="accederActasPrivadas()"><div class="card-content"><i class="material-icons large blue-text text-darken-2">menu_book</i><h5 class="card-title">Libro de Actas</h5><p class="red-text" style="font-weight:bold;"><i class="material-icons tiny">lock</i> Acceso Privado CD</p></div></div></div>
+                <div class="col s12 m4"><div class="card card-menu center-align" onclick="navegar('foro')"><div class="card-content"><i class="material-icons large blue-text text-darken-2">forum</i><h5 class="card-title">Foro Oficial</h5><p class="grey-text">Proyectos Estudiantiles</p></div></div></div>
             </div>
         </section>
 
@@ -147,26 +99,8 @@
         <section id="vista-elecciones-portal" class="vista">
             <h3 class="center-align" style="font-weight:bold;">Módulo Electoral</h3>
             <div class="row">
-                <div class="col s12 m6">
-                    <div class="card z-depth-2" style="border-radius: 12px; height: 100%;">
-                        <div class="card-content center-align">
-                            <i class="material-icons large grey-text text-darken-3">gavel</i>
-                            <span class="card-title" style="font-weight:bold;">Panel de Junta Electoral</span>
-                            <p>Gestión del padrón, oficialización de listas y escrutinio definitivo.</p>
-                            <br>
-                            <button class="btn blue darken-3 w100 waves-effect waves-light" style="border-radius: 8px;" onclick="accederPanelJunta()">Ingresar al Panel</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col s12 m6">
-                    <div class="card terminal-votacion center-align" style="height: 100%;">
-                        <i class="material-icons large">front_hand</i>
-                        <h4 style="font-weight:bold;">Terminal de Votación</h4>
-                        <p>Interfaz pública. Requiere Código Único de Elector entregado por la mesa.</p>
-                        <br>
-                        <button class="btn white black-text w100 waves-effect" style="font-weight:bold; border-radius: 8px;" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button>
-                    </div>
-                </div>
+                <div class="col s12 m6"><div class="card z-depth-2" style="border-radius: 12px; height: 100%;"><div class="card-content center-align"><i class="material-icons large grey-text text-darken-3">gavel</i><span class="card-title" style="font-weight:bold;">Panel de Junta Electoral</span><p>Gestión del padrón, listas y escrutinio.</p><br><button class="btn blue darken-3 w100" style="border-radius: 8px;" onclick="accederPanelJunta()">Ingresar al Panel</button></div></div></div>
+                <div class="col s12 m6"><div class="card terminal-votacion center-align" style="height: 100%;"><i class="material-icons large">front_hand</i><h4 style="font-weight:bold;">Terminal de Votación</h4><p>Requiere Código Único de Elector.</p><br><button class="btn white black-text w100" style="font-weight:bold; border-radius: 8px;" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button></div></div>
             </div>
         </section>
 
@@ -176,79 +110,48 @@
                 <h3>Junta Electoral</h3>
                 <span class="chip red white-text" style="font-weight:bold;"><i class="material-icons left">lock</i> Acceso: <span id="nombre-colegio-junta"></span></span>
             </div>
-            
             <div class="row">
-                <!-- Formulario Oficialización -->
                 <div class="col s12 m6">
                     <div class="card-panel z-depth-2" style="border-radius: 12px;">
                         <h5 style="font-weight:bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Oficializar Lista</h5>
                         <div class="input-field"><input type="number" id="input-numero"><label>Número de Lista</label></div>
-                        <div class="input-field"><input type="text" id="input-nombre-partido"><label>Nombre del Partido / Alianza</label></div>
+                        <div class="input-field"><input type="text" id="input-nombre-partido"><label>Nombre del Partido</label></div>
                         <div class="input-field"><input type="text" id="input-presidente"><label>Candidato/a a Presidente</label></div>
                         <div class="input-field"><input type="text" id="input-vicepresidente"><label>Candidato/a a Vicepresidente</label></div>
-                        <div class="input-field"><input type="text" id="input-curso"><label>Curso de los candidatos</label></div>
-                        
-                        <label>Color de Boleta (Fondo visual)</label>
+                        <div class="input-field"><input type="text" id="input-curso"><label>Curso</label></div>
                         <select class="browser-default" id="input-color" style="margin-bottom: 20px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="" disabled selected>Seleccione un color</option>
-                            <option value="red">Rojo</option>
-                            <option value="blue">Azul</option>
-                            <option value="green">Verde</option>
-                            <option value="orange">Naranja</option>
-                            <option value="purple">Morado</option>
+                            <option value="" disabled selected>Color de Boleta</option>
+                            <option value="red">Rojo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="orange">Naranja</option><option value="purple">Morado</option>
                         </select>
-                        
-                        <p>
-                            <label>
-                                <input type="checkbox" id="check-aval" class="filled-in" />
-                                <span style="color: #333;">Aval escrito del 10% del padrón presentado</span>
-                            </label>
-                        </p>
+                        <p><label><input type="checkbox" id="check-aval" class="filled-in" /><span style="color: #333;">Aval escrito del 10% del padrón presentado</span></label></p>
                         <br>
-                        <button class="btn green darken-2 w100 waves-effect" style="border-radius: 8px; font-weight:bold;" onclick="agregarLista()">
-                            <i class="material-icons left">add_circle</i> Cargar al Sistema
-                        </button>
+                        <button class="btn green darken-2 w100" style="border-radius: 8px; font-weight:bold;" onclick="agregarLista()">Cargar al Sistema</button>
                     </div>
                 </div>
-
-                <!-- Escrutinio y Urna -->
                 <div class="col s12 m6">
                     <div class="card-panel blue darken-4 white-text center-align z-depth-2" style="border-radius: 12px;">
-                        <h6>Urna Digital</h6>
-                        <div class="urna-counter" id="contador-votos">0</div>
-                        <p style="text-transform: uppercase; letter-spacing: 1px;">Votos Emitidos</p>
+                        <h6>Urna Digital</h6><div class="urna-counter" id="contador-votos">0</div><p>Votos Emitidos</p>
                     </div>
-                    
                     <div class="card-panel z-depth-2" style="border-radius: 12px;">
                         <h5 style="font-weight:bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Escrutinio Provisorio</h5>
-                        <div id="admin-listas-activas">
-                            <!-- Las listas y votos se inyectan aquí -->
-                        </div>
-                        <br>
-                        <button class="btn red darken-3 w100 waves-effect" style="border-radius: 8px;" onclick="resetearUrna()">
-                            <i class="material-icons left">delete_sweep</i> Vaciar Urna (Mantener Listas)
-                        </button>
+                        <div id="admin-listas-activas"></div>
+                        <br><button class="btn red darken-3 w100" style="border-radius: 8px;" onclick="resetearUrna()">Vaciar Urna</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- =================== CUARTO OSCURO (TERMINAL) =================== -->
+        <!-- =================== CUARTO OSCURO =================== -->
         <section id="vista-elecciones-terminal" class="vista">
             <div class="terminal-votacion">
                 <h3 class="center-align" style="font-weight:bold;">Cuarto Oscuro Digital</h3>
-                
-                <!-- Autenticación -->
                 <div id="login-votante" style="max-width: 450px; margin: 30px auto; padding: 30px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <p class="center-align" style="font-size: 1.1rem;">Por favor, ingresa el Código de Elector que te entregó la autoridad de mesa:</p>
+                    <p class="center-align">Ingresa el Código de Elector:</p>
                     <input type="text" id="codigo-alumno" placeholder="Ej: ELECTOR-001" class="white-text center-align" style="font-size: 2rem; font-weight:bold; text-transform: uppercase; margin-bottom: 25px;">
-                    <button class="btn blue lighten-1 w100 black-text waves-effect" style="font-weight: bold; border-radius: 8px; font-size: 1.2rem; height: 50px;" onclick="iniciarVotacion()">ENTRAR A VOTAR</button>
+                    <button class="btn blue lighten-1 w100 black-text" style="font-weight: bold; border-radius: 8px; height: 50px;" onclick="iniciarVotacion()">ENTRAR A VOTAR</button>
                     <p id="error-login-voto" class="red-text text-lighten-1 center-align" style="display:none; margin-top: 15px; font-weight: bold;"></p>
-                    <br>
-                    <button class="btn-flat grey-text text-lighten-1 w100 center-align" onclick="navegar('elecciones-portal')">Abandonar Terminal</button>
+                    <br><button class="btn-flat grey-text text-lighten-1 w100 center-align" onclick="navegar('elecciones-portal')">Abandonar Terminal</button>
                 </div>
-                
-                <!-- Selección de Boletas -->
                 <div id="pantalla-boletas" style="display:none;">
                     <h5 class="center-align" style="margin-bottom: 30px;">Selecciona la lista de tu preferencia:</h5>
                     <div class="row" id="contenedor-listas"></div>
@@ -256,21 +159,23 @@
             </div>
         </section>
 
-        <!-- =================== LIBRO DE ACTAS =================== -->
+        <!-- =================== LIBRO DE ACTAS (PRIVADO) =================== -->
         <section id="vista-actas" class="vista">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
                 <div>
-                    <h3 style="margin-bottom: 0;">Libro de Actas Digital</h3>
-                    <p class="grey-text" style="margin-top: 5px;">Archivo institucional de la Comisión Directiva.</p>
+                    <h3 style="margin-bottom: 0;">Libro de Actas (Privado)</h3>
+                    <p class="red-text" style="margin-top: 5px; font-weight:bold;"><i class="material-icons tiny">security</i> Acceso exclusivo Comisión Directiva</p>
                 </div>
             </div>
             
             <div class="row">
+                <!-- Visor de Actas Privadas -->
                 <div class="col s12 m7">
                     <ul class="collection z-depth-1" id="lista-actas" style="border-radius: 8px; border: none;"></ul>
                 </div>
                 
-                <div class="col s12 m5 panel-restringido" id="panel-admin-actas">
+                <!-- Panel para Labrar Actas -->
+                <div class="col s12 m5">
                     <div class="card-panel z-depth-2" style="border-radius: 12px; border-top: 4px solid var(--primary-color);">
                         <h5 style="font-weight:bold;">Labrar Nueva Acta</h5>
                         <div class="input-field"><input type="text" id="acta-titulo"><label>Título del Documento</label></div>
@@ -278,45 +183,419 @@
                         <div class="input-field"><input type="text" id="acta-lugar"><label>Lugar físico</label></div>
                         <div class="input-field"><textarea id="acta-texto" class="materialize-textarea"></textarea><label>Resoluciones y Acuerdos</label></div>
                         <div class="input-field"><input type="text" id="acta-firmas"><label>Autoridades Presentes</label></div>
-                        <button class="btn blue darken-2 w100 waves-effect" style="border-radius: 8px;" onclick="agregarActa()"><i class="material-icons left">save</i> Guardar en Matriz</button>
+                        <button class="btn blue darken-2 w100" style="border-radius: 8px;" onclick="agregarActa()">Guardar en Matriz Privada</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- =================== FORO DE PROYECTOS =================== -->
+        <!-- =================== FORO CON MODERACIÓN =================== -->
         <section id="vista-foro" class="vista">
-            <h3>Foro de Propuestas Inter-Centros</h3>
-            <p class="grey-text">Espacio de debate y apoyo a proyectos estudiantiles.</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                <div>
+                    <h3 style="margin-bottom: 0;">Foro Estudiantil</h3>
+                    <p class="grey-text" style="margin-top: 5px;">Los proyectos enviados serán revisados por la Comisión Directiva antes de publicarse.</p>
+                </div>
+                <div id="btn-moderacion" class="panel-restringido">
+                    <!-- Botón visible solo para CD para moderar -->
+                    <button class="btn orange darken-2" onclick="navegar('moderacion-foro')"><i class="material-icons left">rule</i>Panel de Moderación</button>
+                </div>
+            </div>
             
             <div class="row">
+                <!-- Lista de Proyectos APROBADOS (Públicos) -->
                 <div class="col s12 m8" id="lista-propuestas"></div>
                 
-                <div class="col s12 m4 panel-restringido" id="panel-admin-foro">
+                <!-- Formulario PÚBLICO para Enviar Proyecto a Revisión -->
+                <div class="col s12 m4">
                     <div class="card-panel grey lighten-4 z-depth-1" style="border-radius: 12px;">
-                        <h5 style="font-weight:bold; margin-bottom: 20px;">Publicar Proyecto</h5>
+                        <h5 style="font-weight:bold; margin-bottom: 20px;">Proponer Proyecto</h5>
+                        <p style="font-size: 0.8rem; line-height: 1.2;">Al enviar, el proyecto pasará a estado de <span class="badge-estado estado-pendiente">Revisión</span> por la Comisión Directiva.</p>
                         <div class="input-field"><input type="text" id="titulo-propuesta"><label>Título</label></div>
-                        <div class="input-field"><textarea id="texto-propuesta" class="materialize-textarea"></textarea><label>Fundamentación y Detalles</label></div>
-                        <button class="btn green darken-1 w100 waves-effect" style="border-radius: 8px;" onclick="agregarPropuesta()"><i class="material-icons left">send</i> Enviar Oficialmente</button>
+                        <div class="input-field"><input type="text" id="autor-propuesta" placeholder="Ej: 5to Año A"><label class="active">Autor/Curso</label></div>
+                        <div class="input-field"><textarea id="texto-propuesta" class="materialize-textarea"></textarea><label>Fundamentación</label></div>
+                        <button class="btn blue darken-1 w100" style="border-radius: 8px;" onclick="enviarPropuestaRevision()">Enviar a Revisión</button>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- =================== PANEL DE MODERACIÓN DE FORO (Privado CD) =================== -->
+        <section id="vista-moderacion-foro" class="vista">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Moderación de Proyectos</h3>
+                <button class="btn-flat grey-text" onclick="navegar('foro')">< Volver al Foro Público</button>
+            </div>
+            <p class="red-text" style="font-weight:bold;"><i class="material-icons tiny">lock</i> Acceso exclusivo Comisión Directiva</p>
+            <div class="row" id="lista-propuestas-pendientes">
+                <!-- Proyectos pendientes de aprobación -->
             </div>
         </section>
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="page-footer blue darken-4" style="margin-top: auto;">
         <div class="footer-copyright">
             <div class="container" style="display: flex; justify-content: space-between;">
                 <span>© 2026 Estudiantes al Centro Digital</span>
-                <span class="grey-text text-lighten-1">Arquitectura Multi-Rol</span>
+                <span class="grey-text text-lighten-1">Arquitectura Segura y Moderada</span>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts Base -->
+    <!-- Scripts y Lógica -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // ==========================================
+        // BASE DE DATOS DE ROLES 
+        // ==========================================
+        const CREDENCIALES_SISTEMA = {
+            "CD-IPEM38": { colegio: "IPEM 38", rol: "Comisión Directiva", tipo: "CD" },
+            "JUNTA-IPEM38": { colegio: "IPEM 38", rol: "Junta Electoral", tipo: "JUNTA" }
+        };
+
+        // ==========================================
+        // 1. SISTEMA DE SESIONES Y NAVEGACIÓN
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarSesionUI();
+            navegar('inicio');
+        });
+
+        function navegar(idVista) {
+            document.querySelectorAll('.vista').forEach(seccion => seccion.classList.remove('activa'));
+            document.getElementById(`vista-${idVista}`).classList.add('activa');
+            
+            if (idVista === 'actas') renderizarActas();
+            if (idVista === 'foro') renderizarForoPublico();
+            if (idVista === 'moderacion-foro') renderizarForoModeracion();
+            if (idVista === 'admin-panel') renderizarPanelAdmin();
+        }
+
+        function iniciarSesion() {
+            const input = document.getElementById('input-credencial').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('error-login-inst');
+            const cuenta = CREDENCIALES_SISTEMA[input];
+
+            if (cuenta) {
+                sessionStorage.setItem('usuarioLogueado', JSON.stringify(cuenta));
+                errorMsg.style.display = "none";
+                document.getElementById('input-credencial').value = "";
+                verificarSesionUI();
+                M.toast({html: `Sesión iniciada: ${cuenta.colegio} (${cuenta.tipo})`, classes: 'green rounded'});
+                navegar('inicio');
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+
+        function cerrarSesion() {
+            sessionStorage.removeItem('usuarioLogueado');
+            verificarSesionUI();
+            M.toast({html: 'Sesión cerrada.', classes: 'grey rounded'});
+            navegar('inicio');
+        }
+
+        function resetearSistema() {
+            if(confirm("🛑 ¿Borrar toda la base de datos (Listas, Votos, Actas, Foro)?")) {
+                localStorage.clear(); sessionStorage.clear(); window.location.reload();
+            }
+        }
+
+        function verificarSesionUI() {
+            const userJson = sessionStorage.getItem('usuarioLogueado');
+            const user = userJson ? JSON.parse(userJson) : null;
+            
+            if (user) {
+                document.getElementById('nav-login-btn').style.display = 'none';
+                document.getElementById('nav-user-info').style.display = 'inline-block';
+                document.getElementById('nav-logout-btn').style.display = 'inline-block';
+                document.getElementById('nombre-colegio-nav').innerText = user.colegio;
+                document.getElementById('rol-nav').innerText = user.tipo;
+                document.getElementById('nav-icono-rol').innerText = user.tipo === 'JUNTA' ? 'gavel' : 'account_balance';
+
+                if (user.tipo === 'CD') {
+                    // Si es CD, ve el botón de Actas en el Navbar y el botón de Moderación en el Foro
+                    document.getElementById('nav-item-actas').style.display = 'inline-block';
+                    document.getElementById('btn-moderacion').style.display = 'block';
+                } else {
+                    document.getElementById('nav-item-actas').style.display = 'none';
+                    document.getElementById('btn-moderacion').style.display = 'none';
+                }
+            } else {
+                document.getElementById('nav-login-btn').style.display = 'inline-block';
+                document.getElementById('nav-user-info').style.display = 'none';
+                document.getElementById('nav-logout-btn').style.display = 'none';
+                
+                // Público no ve el botón de Actas ni de Moderación
+                document.getElementById('nav-item-actas').style.display = 'none';
+                document.getElementById('btn-moderacion').style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 2. MÓDULO ELECTORAL (Rol: JUNTA)
+        // ==========================================
+        function accederPanelJunta() {
+            const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+            if (!user) return (M.toast({html: 'Inicia sesión.'}), navegar('login'));
+            if (user.tipo !== 'JUNTA') return alert("🔒 Acceso Bloqueado: Solo la Junta Electoral organiza elecciones.");
+            
+            document.getElementById('nombre-colegio-junta').innerText = user.colegio;
+            navegar('admin-panel');
+        }
+
+        function obtenerListas() {
+            let listas = JSON.parse(localStorage.getItem('listasOficiales')) || [{ id: 99, numero: "0", nombre: "Voto en Blanco", presi: "-", vice: "-", curso: "-", color: "grey" }];
+            localStorage.setItem('listasOficiales', JSON.stringify(listas));
+            return listas;
+        }
+
+        function agregarLista() {
+            const numero = document.getElementById('input-numero').value;
+            const nombre = document.getElementById('input-nombre-partido').value;
+            const presi = document.getElementById('input-presidente').value;
+            const vice = document.getElementById('input-vicepresidente').value;
+            const curso = document.getElementById('input-curso').value;
+            const color = document.getElementById('input-color').value;
+            const tieneAval = document.getElementById('check-aval').checked;
+
+            if (!numero || !nombre || !presi || !vice || !curso || !color) return M.toast({html: 'Faltan datos.'});
+            if (!tieneAval) return alert("Falta aval del 10% del padrón.");
+
+            const listas = obtenerListas();
+            listas.push({ id: new Date().getTime(), numero, nombre, presi, vice, curso, color });
+            localStorage.setItem('listasOficiales', JSON.stringify(listas));
+            
+            document.querySelectorAll('#vista-admin-panel input').forEach(i => i.value = '');
+            document.getElementById('check-aval').checked = false;
+            renderizarPanelAdmin();
+        }
+
+        function renderizarPanelAdmin() {
+            const votos = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+            document.getElementById('contador-votos').innerText = votos.length;
+            const cont = document.getElementById('admin-listas-activas');
+            cont.innerHTML = "";
+            obtenerListas().forEach(lista => {
+                const cant = votos.filter(v => v === lista.id).length;
+                cont.innerHTML += `<div class="boleta-preview ${lista.color} darken-1"><strong>Lista ${lista.numero} - ${lista.nombre}</strong> <span class="badge white black-text right">${cant} VOTOS</span></div>`;
+            });
+        }
+
+        function resetearUrna() {
+            if (confirm("¿Vaciar urna y padrón? Las listas se conservan.")) {
+                localStorage.removeItem('votosEleccion'); localStorage.removeItem('votantesRegistrados');
+                renderizarPanelAdmin();
+            }
+        }
+
+        // ==========================================
+        // 3. CUARTO OSCURO DIGITAL
+        // ==========================================
+        const PADRON_CODIGOS = ["ELECTOR-001", "ELECTOR-002", "ELECTOR-003"];
+
+        function iniciarVotacion() {
+            const codigo = document.getElementById('codigo-alumno').value.trim().toUpperCase();
+            const error = document.getElementById('error-login-voto');
+            const yaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
+
+            if (!PADRON_CODIGOS.includes(codigo)) return (error.innerText = "Código de Elector inexistente.", error.style.display = "block");
+            if (yaVotaron.includes(codigo)) return (error.innerText = "Fraude: Código ya utilizado.", error.style.display = "block");
+
+            error.style.display = "none";
+            document.getElementById('login-votante').style.display = "none";
+            document.getElementById('pantalla-boletas').style.display = "block";
+            
+            const cont = document.getElementById('contenedor-listas');
+            cont.innerHTML = '';
+            obtenerListas().forEach(lista => {
+                cont.innerHTML += `
+                    <div class="col s12 m4">
+                        <div class="card ${lista.color} darken-2 white-text center-align hoverable" style="border-radius:12px; cursor:pointer;" onclick="emitirVoto(${lista.id}, '${codigo}')">
+                            <div class="card-content"><h5>Lista ${lista.numero}</h5><h4>${lista.nombre}</h4><p>${lista.presi} / ${lista.vice}</p><br><button class="btn white black-text w100">VOTAR</button></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function emitirVoto(id, cod) {
+            if (confirm("El voto es secreto y definitivo. ¿Confirmas?")) {
+                let v = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
+                v.push(cod); localStorage.setItem('votantesRegistrados', JSON.stringify(v));
+                
+                let u = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+                u.push(id); localStorage.setItem('votosEleccion', JSON.stringify(u));
+
+                alert("Voto registrado en urna.");
+                document.getElementById('pantalla-boletas').style.display = "none";
+                document.getElementById('login-votante').style.display = "block";
+                document.getElementById('codigo-alumno').value = "";
+            }
+        }
+
+        // ==========================================
+        // 4. ACTAS (Privado y Seguro - Exclusivo CD)
+        // ==========================================
+        function accederActasPrivadas() {
+            const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+            if (!user || user.tipo !== 'CD') {
+                alert("🔒 ACCESO DENEGADO: El Libro de Actas es un documento privado de gestión interna de la Comisión Directiva.");
+                return navegar('login');
+            }
+            navegar('actas');
+        }
+
+        function obtenerActas() { return JSON.parse(localStorage.getItem('libroActas')) || []; }
+
+        function renderizarActas() {
+            const lista = document.getElementById('lista-actas');
+            lista.innerHTML = '';
+            let actas = obtenerActas();
+            if(actas.length === 0) lista.innerHTML = '<li class="collection-item">El Libro Matriz está vacío.</li>';
+            
+            actas.slice().reverse().forEach(acta => {
+                lista.innerHTML += `
+                    <li class="collection-item">
+                        <span class="title" style="font-weight:bold; color:#1565c0;">${acta.titulo}</span>
+                        <p><i class="material-icons tiny">event</i> ${acta.fecha} | <i class="material-icons tiny">place</i> ${acta.lugar}<br><br>
+                        <span style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #1565c0; display: block;"><em>${acta.texto}</em></span><br>
+                        <span class="green-text text-darken-2"><strong>Firmas y Sello:</strong> ${acta.firmas}</span></p>
+                    </li>`;
+            });
+        }
+
+        function agregarActa() {
+            const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+            const titulo = document.getElementById('acta-titulo').value.trim();
+            const fecha = document.getElementById('acta-fecha').value;
+            const lugar = document.getElementById('acta-lugar').value.trim();
+            const texto = document.getElementById('acta-texto').value.trim();
+            const firmas = document.getElementById('acta-firmas').value.trim();
+
+            if (!titulo || !fecha || !lugar || !texto || !firmas) return M.toast({html: 'Rellene todos los campos.'});
+            
+            const actas = obtenerActas();
+            actas.push({ titulo, fecha, lugar, texto, firmas: `${firmas} (CD - ${user.colegio})` });
+            localStorage.setItem('libroActas', JSON.stringify(actas));
+            
+            document.querySelectorAll('#vista-actas input, #vista-actas textarea').forEach(i => i.value = '');
+            M.toast({html: 'Acta archivada.', classes: 'green rounded'});
+            renderizarActas();
+        }
+
+        // ==========================================
+        // 5. FORO CON SISTEMA DE MODERACIÓN (Aprobación Previa)
+        // ==========================================
+        function obtenerProyectosForo() {
+            return JSON.parse(localStorage.getItem('proyectosForo')) || [
+                { id: 1, titulo: "Campaña de Reciclaje", autor: "5to Año A", texto: "Separación de residuos.", votos: 15, estado: "aprobado" },
+                { id: 2, titulo: "Torneo de E-Sports", autor: "4to Año B", texto: "Jugar CS:GO en los recreos.", votos: 0, estado: "pendiente" } // Este no se verá públicamente
+            ];
+        }
+
+        function enviarPropuestaRevision() {
+            const titulo = document.getElementById('titulo-propuesta').value.trim();
+            const autor = document.getElementById('autor-propuesta').value.trim();
+            const texto = document.getElementById('texto-propuesta').value.trim();
+            
+            if(!titulo || !texto || !autor) return M.toast({html: 'Completa todos los datos.', classes: 'red rounded'});
+
+            const proyectos = obtenerProyectosForo();
+            // Al crearse, el estado es 'pendiente' (Oculto al público)
+            proyectos.push({ id: new Date().getTime(), titulo, autor, texto, votos: 0, estado: "pendiente" });
+            localStorage.setItem('proyectosForo', JSON.stringify(proyectos));
+            
+            document.querySelectorAll('#vista-foro input, #vista-foro textarea').forEach(i => i.value = '');
+            alert("✅ Proyecto enviado con éxito. La Comisión Directiva revisará tu propuesta antes de publicarla en el Foro para evitar contenido inapropiado o discriminatorio.");
+            renderizarForoPublico();
+        }
+
+        function renderizarForoPublico() {
+            const cont = document.getElementById('lista-propuestas');
+            cont.innerHTML = '';
+            const proyectos = obtenerProyectosForo();
+            
+            // Filtra SOLO los proyectos en estado 'aprobado'
+            const proyectosAprobados = proyectos.filter(p => p.estado === 'aprobado');
+            
+            if (proyectosAprobados.length === 0) cont.innerHTML = '<p class="grey-text">No hay proyectos aprobados en este momento.</p>';
+            
+            proyectosAprobados.sort((a, b) => b.votos - a.votos).forEach(prop => {
+                cont.innerHTML += `
+                    <div class="card" style="border-radius:10px; border-left: 5px solid #4caf50;">
+                        <div class="card-content">
+                            <span class="card-title" style="font-weight:bold;">${prop.titulo} <span class="badge blue white-text right" style="border-radius:12px;">${prop.votos} VOTOS</span></span>
+                            <p>${prop.texto}</p>
+                            <br><small class="grey-text">Autor: <strong>${prop.autor}</strong> | <span class="badge-estado estado-aprobado">Proyecto Oficial</span></small>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn-small blue lighten-1 black-text" style="border-radius:20px; font-weight:bold;" onclick="votarPropuesta(${prop.id})">Apoyar Proyecto</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function votarPropuesta(id) {
+            const proyectos = obtenerProyectosForo();
+            const index = proyectos.findIndex(p => p.id === id);
+            if (index !== -1) {
+                proyectos[index].votos++;
+                localStorage.setItem('proyectosForo', JSON.stringify(proyectos));
+                renderizarForoPublico();
+            }
+        }
+
+        // --- Panel Exclusivo para CD: Moderación ---
+        function renderizarForoModeracion() {
+            const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+            if (!user || user.tipo !== 'CD') return alert("Acceso denegado.");
+
+            const cont = document.getElementById('lista-propuestas-pendientes');
+            cont.innerHTML = '';
+            const proyectos = obtenerProyectosForo();
+            
+            // Muestra SOLO los proyectos 'pendientes'
+            const proyectosPendientes = proyectos.filter(p => p.estado === 'pendiente');
+            
+            if (proyectosPendientes.length === 0) cont.innerHTML = '<p class="grey-text">No hay proyectos pendientes de revisión.</p>';
+            
+            proyectosPendientes.forEach(prop => {
+                cont.innerHTML += `
+                    <div class="col s12 m6">
+                        <div class="card" style="border-radius:10px; border-left: 5px solid #ff9800;">
+                            <div class="card-content">
+                                <span class="card-title" style="font-weight:bold; font-size:1.1rem;">${prop.titulo}</span>
+                                <p style="font-size:0.9rem;">${prop.texto}</p>
+                                <br><small class="grey-text">Autor: ${prop.autor} | <span class="badge-estado estado-pendiente">Pendiente</span></small>
+                            </div>
+                            <div class="card-action center-align">
+                                <button class="btn-small green" onclick="cambiarEstadoProyecto(${prop.id}, 'aprobado')"><i class="material-icons">check</i></button>
+                                <button class="btn-small red" onclick="cambiarEstadoProyecto(${prop.id}, 'rechazado')"><i class="material-icons">delete</i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function cambiarEstadoProyecto(id, nuevoEstado) {
+            const proyectos = obtenerProyectosForo();
+            const index = proyectos.findIndex(p => p.id === id);
+            
+            if (index !== -1) {
+                if (nuevoEstado === 'rechazado') {
+                    if(confirm("¿Rechazar y eliminar definitivamente este proyecto por incumplir normas de convivencia?")) {
+                        proyectos.splice(index, 1);
+                    } else return;
+                } else {
+                    proyectos[index].estado = nuevoEstado;
+                }
+                
+                localStorage.setItem('proyectosForo', JSON.stringify(proyectos));
+                M.toast({html: `Proyecto ${nuevoEstado}.`, classes: 'green rounded'});
+                renderizarForoModeracion();
+            }
+        }
+    </script>
 </body>
 </html>
