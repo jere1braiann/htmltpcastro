@@ -13,27 +13,27 @@
         .hero { background: #1976d2; color: white; padding: 40px 0; text-align: center; margin-bottom: 20px; border-radius: 8px;}
         .card-menu { cursor: pointer; transition: 0.3s; height: 100%; }
         .card-menu:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
-        .vista { display: none; } /* Oculta todas las vistas por defecto */
+        .vista { display: none; }
         .vista.activa { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Estilos específicos para la terminal de votación */
+        .terminal-votacion { background-color: #263238; color: white; padding: 40px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Navegación Fija -->
     <nav class="blue darken-3">
         <div class="nav-wrapper container">
             <a href="#" class="brand-logo" onclick="navegar('inicio')"><i class="material-icons">school</i> Centro Digital</a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li><a href="#" onclick="navegar('inicio')">Inicio</a></li>
-                <li><a href="#" onclick="navegar('elecciones')">Elecciones</a></li>
+                <li><a href="#" onclick="navegar('elecciones-portal')">Elecciones</a></li>
                 <li><a href="#" onclick="navegar('actas')">Libro de Actas</a></li>
                 <li><a href="#" onclick="navegar('foro')">Foro</a></li>
             </ul>
         </div>
     </nav>
 
-    <!-- Contenedor Dinámico -->
     <main id="app" class="container">
         
         <!-- VISTA: INICIO -->
@@ -44,11 +44,11 @@
             </div>
             <div class="row">
                 <div class="col s12 m4">
-                    <div class="card card-menu center-align" onclick="navegar('elecciones')">
+                    <div class="card card-menu center-align" onclick="navegar('elecciones-portal')">
                         <div class="card-content">
                             <i class="material-icons large blue-text">how_to_vote</i>
                             <span class="card-title">Elecciones</span>
-                            <p>Ingresa al cuarto oscuro digital.</p>
+                            <p>Gestión y Cuarto Oscuro.</p>
                         </div>
                     </div>
                 </div>
@@ -73,23 +73,81 @@
             </div>
         </section>
 
-        <!-- VISTA: ELECCIONES -->
-        <section id="vista-elecciones" class="vista">
-            <h3 class="center-align">Cuarto Oscuro Digital</h3>
-            
-            <!-- Paso 1: Login -->
-            <div id="login-votante" class="card" style="max-width: 400px; margin: 0 auto; padding: 20px;">
-                <p>Ingresa tu Código de Identificación Único:</p>
-                <input type="text" id="codigo-alumno" placeholder="Ej: ALUMNO-123">
-                <button class="btn blue w100" onclick="iniciarVotacion()">Ingresar</button>
-                <p id="error-login" class="red-text" style="display:none;">Código inválido o ya votaste.</p>
+        <!-- VISTA: PORTAL DE ELECCIONES (Decide si sos Admin o Votante) -->
+        <section id="vista-elecciones-portal" class="vista">
+            <h3 class="center-align">Módulo Electoral</h3>
+            <div class="row">
+                <!-- Acceso Autoridad -->
+                <div class="col s12 m6">
+                    <div class="card">
+                        <div class="card-content center-align">
+                            <i class="material-icons large grey-text">admin_panel_settings</i>
+                            <span class="card-title">Acceso Autoridad</span>
+                            <p>Para la Junta Electoral del Centro.</p>
+                            <br>
+                            <input type="password" id="codigo-admin" placeholder="Código de Autoridad">
+                            <button class="btn blue darken-2 w100" onclick="loginAdmin()">Ingresar Panel</button>
+                            <p id="error-admin" class="red-text" style="display:none;">Código incorrecto.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Acceso Cuarto Oscuro -->
+                <div class="col s12 m6">
+                    <div class="card terminal-votacion center-align">
+                        <i class="material-icons large">front_hand</i>
+                        <h4>Terminal de Votación</h4>
+                        <p>Habilitar computadora para que voten los alumnos.</p>
+                        <br>
+                        <button class="btn white black-text w100" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- Paso 2: Boletas (Oculto por defecto) -->
-            <div id="pantalla-boletas" style="display:none;">
-                <p class="center-align">Selecciona tu lista (Lista Completa):</p>
-                <div class="row" id="contenedor-listas">
-                    <!-- Las tarjetas se generan por JS -->
+        <!-- VISTA: PANEL ADMIN (Sólo Autoridades) -->
+        <section id="vista-admin-panel" class="vista">
+            <h3>Panel de Control - IPEM 38</h3>
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="card-panel">
+                        <h5>Estado de Urna</h5>
+                        <h2 id="contador-votos" class="blue-text center-align">0</h2>
+                        <p class="center-align">Votos emitidos hasta ahora</p>
+                    </div>
+                </div>
+                <div class="col s12 m6">
+                    <div class="card-panel">
+                        <h5>Resultados (Simulados)</h5>
+                        <ul class="collection" id="resultados-lista">
+                            <!-- Se llena por JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <button class="btn red" onclick="navegar('elecciones-portal')">Cerrar Sesión</button>
+        </section>
+
+        <!-- VISTA: TERMINAL DE VOTACIÓN (Cuarto Oscuro) -->
+        <section id="vista-elecciones-terminal" class="vista">
+            <div class="terminal-votacion">
+                <h3 class="center-align">Cuarto Oscuro Digital</h3>
+                
+                <!-- Paso 1: Login Estudiante -->
+                <div id="login-votante" style="max-width: 400px; margin: 0 auto; padding: 20px;">
+                    <p>Ingresa tu Código de Identificación Único:</p>
+                    <input type="text" id="codigo-alumno" placeholder="Ej: ALUMNO-1" class="white-text">
+                    <button class="btn blue w100" onclick="iniciarVotacion()">Validar Identidad</button>
+                    <p id="error-login" class="red-text" style="display:none;">Código inválido o ya votaste.</p>
+                    <br><br>
+                    <button class="btn-flat grey-text" onclick="navegar('elecciones-portal')">< Volver al Portal</button>
+                </div>
+
+                <!-- Paso 2: Boletas (Oculto) -->
+                <div id="pantalla-boletas" style="display:none;">
+                    <p class="center-align">Selecciona tu lista completa:</p>
+                    <div class="row" id="contenedor-listas">
+                        <!-- Las tarjetas se generan por JS -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -97,18 +155,14 @@
         <!-- VISTA: ACTAS -->
         <section id="vista-actas" class="vista">
             <h3>Libro de Actas Digital</h3>
-            <ul class="collection" id="lista-actas">
-                <!-- Se llena por JS -->
-            </ul>
+            <ul class="collection" id="lista-actas"></ul>
         </section>
 
         <!-- VISTA: FORO -->
         <section id="vista-foro" class="vista">
             <h3>Foro Inter-Centros</h3>
             <div class="row">
-                <div class="col s12 m8" id="lista-propuestas">
-                    <!-- Se llena por JS -->
-                </div>
+                <div class="col s12 m8" id="lista-propuestas"></div>
                 <div class="col s12 m4">
                     <div class="card-panel grey lighten-4">
                         <h5>Nueva Propuesta</h5>
@@ -124,11 +178,10 @@
 
     <footer class="page-footer blue darken-4">
         <div class="footer-copyright center-align">
-            <div class="container">© 2026 Sistema Maqueta en GitHub Pages</div>
+            <div class="container">© 2026 Estudiantes al Centro Digital</div>
         </div>
     </footer>
 
-    <!-- Lógica de la aplicación -->
     <script src="app.js"></script>
 </body>
 </html>
