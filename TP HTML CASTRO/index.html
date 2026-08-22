@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudiantes al Centro Digital</title>
-    <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -16,8 +15,8 @@
         .vista { display: none; }
         .vista.activa { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Estilos específicos para la terminal de votación */
         .terminal-votacion { background-color: #263238; color: white; padding: 40px; border-radius: 10px; }
+        .boleta-preview { padding: 15px; border-radius: 8px; color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -48,7 +47,6 @@
                         <div class="card-content">
                             <i class="material-icons large blue-text">how_to_vote</i>
                             <span class="card-title">Elecciones</span>
-                            <p>Gestión y Cuarto Oscuro.</p>
                         </div>
                     </div>
                 </div>
@@ -57,7 +55,6 @@
                         <div class="card-content">
                             <i class="material-icons large blue-text">menu_book</i>
                             <span class="card-title">Libro de Actas</span>
-                            <p>Consulta las asambleas recientes.</p>
                         </div>
                     </div>
                 </div>
@@ -66,37 +63,32 @@
                         <div class="card-content">
                             <i class="material-icons large blue-text">forum</i>
                             <span class="card-title">Foro de Propuestas</span>
-                            <p>Publica y vota ideas.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- VISTA: PORTAL DE ELECCIONES (Decide si sos Admin o Votante) -->
+        <!-- VISTA: PORTAL DE ELECCIONES -->
         <section id="vista-elecciones-portal" class="vista">
             <h3 class="center-align">Módulo Electoral</h3>
             <div class="row">
-                <!-- Acceso Autoridad -->
                 <div class="col s12 m6">
                     <div class="card">
                         <div class="card-content center-align">
                             <i class="material-icons large grey-text">admin_panel_settings</i>
                             <span class="card-title">Acceso Autoridad</span>
-                            <p>Para la Junta Electoral del Centro.</p>
                             <br>
-                            <input type="password" id="codigo-admin" placeholder="Código de Autoridad">
+                            <input type="password" id="codigo-admin" placeholder="Código: ADMIN-IPEM38">
                             <button class="btn blue darken-2 w100" onclick="loginAdmin()">Ingresar Panel</button>
                             <p id="error-admin" class="red-text" style="display:none;">Código incorrecto.</p>
                         </div>
                     </div>
                 </div>
-                <!-- Acceso Cuarto Oscuro -->
                 <div class="col s12 m6">
                     <div class="card terminal-votacion center-align">
                         <i class="material-icons large">front_hand</i>
                         <h4>Terminal de Votación</h4>
-                        <p>Habilitar computadora para que voten los alumnos.</p>
                         <br>
                         <button class="btn white black-text w100" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button>
                     </div>
@@ -104,27 +96,61 @@
             </div>
         </section>
 
-        <!-- VISTA: PANEL ADMIN (Sólo Autoridades) -->
+        <!-- VISTA: PANEL ADMIN (NUEVA ESTRUCTURA) -->
         <section id="vista-admin-panel" class="vista">
-            <h3>Panel de Control - IPEM 38</h3>
+            <h3>Panel de Junta Electoral - IPEM 38</h3>
+            
             <div class="row">
+                <!-- FORMULARIO CARGA DE LISTAS -->
                 <div class="col s12 m6">
                     <div class="card-panel">
-                        <h5>Estado de Urna</h5>
-                        <h2 id="contador-votos" class="blue-text center-align">0</h2>
-                        <p class="center-align">Votos emitidos hasta ahora</p>
+                        <h5>Oficializar Nueva Lista</h5>
+                        <div class="input-field">
+                            <input type="number" id="input-numero" placeholder="Ej: 10">
+                            <label class="active">Número de Lista</label>
+                        </div>
+                        <div class="input-field">
+                            <input type="text" id="input-nombre-partido" placeholder="Ej: Frente Estudiantil">
+                            <label class="active">Nombre del Partido / Lista</label>
+                        </div>
+                        <div class="input-field">
+                            <input type="text" id="input-presidente" placeholder="Ej: Axel Castro">
+                            <label class="active">Candidato/a a Presidente</label>
+                        </div>
+                        <label>Color de la Boleta</label>
+                        <select class="browser-default" id="input-color">
+                            <option value="" disabled selected>Elige un color</option>
+                            <option value="red">Rojo</option>
+                            <option value="blue">Azul</option>
+                            <option value="green">Verde</option>
+                            <option value="orange">Naranja</option>
+                            <option value="purple">Morado</option>
+                            <option value="grey">Gris (Voto en Blanco)</option>
+                        </select>
+                        <br>
+                        <button class="btn green w100" onclick="agregarLista()">Cargar Lista</button>
                     </div>
                 </div>
+
+                <!-- ESTADO URNA Y LISTAS ACTIVAS -->
                 <div class="col s12 m6">
+                    <div class="card-panel blue darken-3 white-text center-align">
+                        <h6>Estado de la Urna</h6>
+                        <h2 id="contador-votos" style="margin: 10px 0;">0</h2>
+                        <p>Votos emitidos</p>
+                    </div>
+                    
                     <div class="card-panel">
-                        <h5>Resultados (Simulados)</h5>
-                        <ul class="collection" id="resultados-lista">
-                            <!-- Se llena por JS -->
-                        </ul>
+                        <h5>Listas Oficializadas para Votar</h5>
+                        <div id="admin-listas-activas">
+                            <!-- JS llena esto -->
+                        </div>
+                        <br>
+                        <button class="btn red w100" onclick="resetearUrna()">Reiniciar Elección (Borrar Todo)</button>
                     </div>
                 </div>
             </div>
-            <button class="btn red" onclick="navegar('elecciones-portal')">Cerrar Sesión</button>
+            <button class="btn grey" onclick="navegar('elecciones-portal')">Cerrar Panel</button>
         </section>
 
         <!-- VISTA: TERMINAL DE VOTACIÓN (Cuarto Oscuro) -->
@@ -132,7 +158,6 @@
             <div class="terminal-votacion">
                 <h3 class="center-align">Cuarto Oscuro Digital</h3>
                 
-                <!-- Paso 1: Login Estudiante -->
                 <div id="login-votante" style="max-width: 400px; margin: 0 auto; padding: 20px;">
                     <p>Ingresa tu Código de Identificación Único:</p>
                     <input type="text" id="codigo-alumno" placeholder="Ej: ALUMNO-1" class="white-text">
@@ -142,7 +167,6 @@
                     <button class="btn-flat grey-text" onclick="navegar('elecciones-portal')">< Volver al Portal</button>
                 </div>
 
-                <!-- Paso 2: Boletas (Oculto) -->
                 <div id="pantalla-boletas" style="display:none;">
                     <p class="center-align">Selecciona tu lista completa:</p>
                     <div class="row" id="contenedor-listas">
@@ -152,36 +176,20 @@
             </div>
         </section>
 
-        <!-- VISTA: ACTAS -->
+        <!-- VISTAS ACTAS Y FORO -->
         <section id="vista-actas" class="vista">
             <h3>Libro de Actas Digital</h3>
             <ul class="collection" id="lista-actas"></ul>
         </section>
 
-        <!-- VISTA: FORO -->
         <section id="vista-foro" class="vista">
             <h3>Foro Inter-Centros</h3>
             <div class="row">
                 <div class="col s12 m8" id="lista-propuestas"></div>
-                <div class="col s12 m4">
-                    <div class="card-panel grey lighten-4">
-                        <h5>Nueva Propuesta</h5>
-                        <input type="text" id="titulo-propuesta" placeholder="Título corto">
-                        <textarea id="texto-propuesta" class="materialize-textarea" placeholder="Describe tu idea..."></textarea>
-                        <button class="btn green" onclick="agregarPropuesta()">Publicar</button>
-                    </div>
-                </div>
             </div>
         </section>
 
     </main>
-
-    <footer class="page-footer blue darken-4">
-        <div class="footer-copyright center-align">
-            <div class="container">© 2026 Estudiantes al Centro Digital</div>
-        </div>
-    </footer>
-
     <script src="app.js"></script>
 </body>
 </html>
