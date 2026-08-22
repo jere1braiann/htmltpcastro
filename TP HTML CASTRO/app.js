@@ -1,43 +1,127 @@
 // ==========================================
-// 1. MOTOR DE NAVEGACIÓN (SPA ROUTER)
+// BASE DE DATOS DE ROLES (Autenticación estática)
 // ==========================================
-function navegar(idVista) {
-    document.querySelectorAll('.vista').forEach(seccion => {
-        seccion.classList.remove('activa');
-    });
-    document.getElementById(`vista-${idVista}`).classList.add('activa');
+const CREDENCIALES_SISTEMA = {
+    // 1. Comisión Directiva: Puede crear Actas y subir proyectos al Foro.
+    "CD-IPEM38": { colegio: "IPEM 38", rol: "Comisión Directiva", tipo: "CD" },
+    "CD-TECNICA": { colegio: "Esc. Técnica 1", rol: "Comisión Directiva", tipo: "CD" },
+    
+    // 2. Junta Electoral: Control total sobre padrón, urnas y oficialización de boletas.
+    "JUNTA-IPEM38": { colegio: "IPEM 38", rol: "Junta Electoral", tipo: "JUNTA" },
+    "JUNTA-TECNICA": { colegio: "Esc. Técnica 1", rol: "Junta Electoral", tipo: "JUNTA" }
+};
 
-    // Disparadores automáticos al cambiar de pantalla
+// ==========================================
+// 1. SISTEMA DE NAVEGACIÓN Y SESIÓN (Router)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    verificarSesionUI();
+    navegar('inicio');
+});
+
+function navegar(idVista) {
+    document.querySelectorAll('.vista').forEach(seccion => seccion.classList.remove('activa'));
+    document.getElementById(`vista-${idVista}`).classList.add('activa');
+    
+    // Refresco de datos automático al entrar a una vista
     if (idVista === 'actas') renderizarActas();
     if (idVista === 'foro') renderizarForo();
     if (idVista === 'admin-panel') renderizarPanelAdmin();
 }
 
+function iniciarSesion() {
+    const input = document.getElementById('input-credencial').value.trim().toUpperCase();
+    const errorMsg = document.getElementById('error-login-inst');
+    const cuenta = CREDENCIALES_SISTEMA[input];
+
+    if (cuenta) {
+        sessionStorage.setItem('usuarioLogueado', JSON.stringify(cuenta));
+        errorMsg.style.display = "none";
+        document.getElementById('input-credencial').value = "";
+        
+        verificarSesionUI();
+        M.toast({html: `Bienvenido, ${cuenta.colegio} (${cuenta.tipo})`, classes: 'green rounded'});
+        navegar('inicio');
+    } else {
+        errorMsg.style.display = "block";
+    }
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('usuarioLogueado');
+    verificarSesionUI();
+    M.toast({html: 'Sesión cerrada correctamente.', classes: 'grey rounded'});
+    navegar('inicio');
+}
+
+function resetearSistema() {
+    if(confirm("🛑 ATENCIÓN: Acción destructiva. Se borrará toda la configuración, actas, foro y votos. ¿Continuar?")) {
+        localStorage.clear();
+        sessionStorage.clear();
+        alert("Sistema formateado.");
+        window.location.reload();
+    }
+}
+
+// Interfaz Dinámica según el Rol guardado en SessionStorage
+function verificarSesionUI() {
+    const userJson = sessionStorage.getItem('usuarioLogueado');
+    const user = userJson ? JSON.parse(userJson) : null;
+    
+    if (user) {
+        document.getElementById('nav-login-btn').style.display = 'none';
+        document.getElementById('nav-user-info').style.display = 'inline-block';
+        document.getElementById('nav-logout-btn').style.display = 'inline-block';
+        document.getElementById('nombre-colegio-nav').innerText = user.colegio;
+        document.getElementById('rol-nav').innerText = user.tipo;
+        document.getElementById('nav-icono-rol').innerText = user.tipo === 'JUNTA' ? 'gavel' : 'account_balance';
+
+        // Lógica de Permisos
+        if (user.tipo === 'CD') {
+            document.getElementById('panel-admin-actas').style.display = 'block';
+            document.getElementById('panel-admin-foro').style.display = 'block';
+        } else {
+            document.getElementById('panel-admin-actas').style.display = 'none';
+            document.getElementById('panel-admin-foro').style.display = 'none';
+        }
+    } else {
+        // Vista Pública (Modo solo lectura y acceso a cuarto oscuro)
+        document.getElementById('nav-login-btn').style.display = 'inline-block';
+        document.getElementById('nav-user-info').style.display = 'none';
+        document.getElementById('nav-logout-btn').style.display = 'none';
+        document.getElementById('panel-admin-actas').style.display = 'none';
+        document.getElementById('panel-admin-foro').style.display = 'none';
+    }
+}
+
 // ==========================================
-// 2. MÓDULO ELECTORAL: JUNTA ELECTORAL (ADMIN)
+// 2. MÓDULO ELECTORAL (Exclusivo Junta)
 // ==========================================
-const CREDENCIAL_ADMIN = "ADMIN-IPEM38";
-const PADRON_SIMULADO = ["ALUMNO-1", "ALUMNO-2", "ALUMNO-3", "ALUMNO-4", "ALUMNO-5"];
+function accederPanelJunta() {
+    const userJson = sessionStorage.getItem('usuarioLogueado');
+    const user = userJson ? JSON.parse(userJson) : null;
+
+    if (!user) {
+        M.toast({html: 'Acceso Denegado: Inicia sesión.', classes: 'red rounded'});
+        return navegar('login');
+    }
+    
+    if (user.tipo !== 'JUNTA') {
+        alert("🔒 Acceso Bloqueado: Estatutariamente, solo la Junta Electoral tiene competencia para organizar elecciones. Tu credencial corresponde a la Comisión Directiva.");
+        return;
+    }
+    
+    document.getElementById('nombre-colegio-junta').innerText = user.colegio;
+    navegar('admin-panel');
+}
 
 function obtenerListas() {
     let listas = JSON.parse(localStorage.getItem('listasOficiales'));
     if (!listas || listas.length === 0) {
-        // Lista por defecto si la base está vacía
         listas = [{ id: 99, numero: "0", nombre: "Voto en Blanco", presi: "-", vice: "-", curso: "-", color: "grey" }];
         localStorage.setItem('listasOficiales', JSON.stringify(listas));
     }
     return listas;
-}
-
-function loginAdmin() {
-    const input = document.getElementById('codigo-admin').value.trim();
-    if (input === CREDENCIAL_ADMIN) {
-        document.getElementById('error-admin').style.display = "none";
-        document.getElementById('codigo-admin').value = "";
-        navegar('admin-panel');
-    } else {
-        document.getElementById('error-admin').style.display = "block";
-    }
 }
 
 function agregarLista() {
@@ -49,120 +133,99 @@ function agregarLista() {
     const color = document.getElementById('input-color').value;
     const tieneAval = document.getElementById('check-aval').checked;
 
-    if (!numero || !nombre || !presi || !vice || !curso || !color) {
-        return alert("Error: Completa todos los campos de la fórmula para oficializar la lista.");
-    }
-    if (!tieneAval) {
-        return alert("Rechazado: Según Art. 28 de la Res. 124/2010, no se puede oficializar sin el aval escrito del 10% del padrón.");
-    }
+    if (!numero || !nombre || !presi || !vice || !curso || !color) return M.toast({html: 'Complete todos los datos.', classes: 'orange'});
+    if (!tieneAval) return alert("Rechazo Legal: No se puede oficializar sin el aval del 10% del padrón.");
 
     const listas = obtenerListas();
-    listas.push({ 
-        id: new Date().getTime(), numero, nombre, presi, vice, curso, color 
-    });
+    listas.push({ id: new Date().getTime(), numero, nombre, presi, vice, curso, color });
     localStorage.setItem('listasOficiales', JSON.stringify(listas));
     
-    // Limpiar formulario
     document.querySelectorAll('#vista-admin-panel input').forEach(input => input.value = '');
     document.getElementById('check-aval').checked = false;
-    
-    alert(`Lista ${numero} - ${nombre} ha sido oficializada con éxito.`);
+    M.toast({html: 'Lista Oficializada con éxito.', classes: 'green rounded'});
     renderizarPanelAdmin();
 }
 
 function renderizarPanelAdmin() {
-    const votosStorage = JSON.parse(localStorage.getItem('votosEleccion')) || [];
-    document.getElementById('contador-votos').innerText = votosStorage.length;
-
-    const contenedorListas = document.getElementById('admin-listas-activas');
-    contenedorListas.innerHTML = "";
-    
+    const votos = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+    document.getElementById('contador-votos').innerText = votos.length;
+    const cont = document.getElementById('admin-listas-activas');
+    cont.innerHTML = "";
     obtenerListas().forEach(lista => {
-        const cantVotos = votosStorage.filter(v => v === lista.id).length;
-        contenedorListas.innerHTML += `
+        const cant = votos.filter(v => v === lista.id).length;
+        cont.innerHTML += `
             <div class="boleta-preview ${lista.color} darken-1">
                 <strong>Lista ${lista.numero} - ${lista.nombre}</strong><br>
-                Fórmula: ${lista.presi} y ${lista.vice}<br>
-                <small>Candidatos de: ${lista.curso}</small>
-                <span class="badge white black-text right" style="font-weight:bold;">${cantVotos} VOTOS</span>
-            </div>
-        `;
+                <span style="font-size:0.9rem;">Fórmula: ${lista.presi} / ${lista.vice}</span>
+                <span class="badge white black-text right" style="font-weight:bold; border-radius:12px;">${cant} VOTOS</span>
+            </div>`;
     });
 }
 
 function resetearUrna() {
-    if (confirm("⚠️ ATENCIÓN: Esto eliminará los votos, reiniciará el padrón y borrará las listas creadas. ¿Proceder?")) {
-        localStorage.removeItem('listasOficiales');
+    if (confirm("⚠️ ¿Vaciar la urna y reiniciar el padrón de electores? Las listas creadas se conservarán.")) {
         localStorage.removeItem('votosEleccion');
         localStorage.removeItem('votantesRegistrados');
+        M.toast({html: 'Urna Vaciada.', classes: 'grey rounded'});
         renderizarPanelAdmin();
     }
 }
 
 // ==========================================
-// 3. MÓDULO ELECTORAL: CUARTO OSCURO (ESTUDIANTE)
+// 3. CUARTO OSCURO DIGITAL
 // ==========================================
+const PADRON_CODIGOS = ["ELECTOR-001", "ELECTOR-002", "ELECTOR-003", "ELECTOR-004"];
+
 function iniciarVotacion() {
     const codigo = document.getElementById('codigo-alumno').value.trim().toUpperCase();
-    const msjError = document.getElementById('error-login');
-    let alumnosQueYaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
+    const error = document.getElementById('error-login-voto');
+    const yaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
 
-    if (!PADRON_SIMULADO.includes(codigo)) {
-        msjError.innerText = "Error: El código ingresado no figura en el padrón electoral.";
-        msjError.style.display = "block";
-        return;
+    if (!PADRON_CODIGOS.includes(codigo)) {
+        return (error.innerText = "Error: Código de Elector inexistente.", error.style.display = "block");
     }
-    if (alumnosQueYaVotaron.includes(codigo)) {
-        msjError.innerText = "Operación Rechazada: Este código de identificación ya emitió su voto.";
-        msjError.style.display = "block";
-        return;
+    if (yaVotaron.includes(codigo)) {
+        return (error.innerText = "Fraude Detectado: Este Código ya fue utilizado para votar.", error.style.display = "block");
     }
 
-    msjError.style.display = "none";
+    error.style.display = "none";
     document.getElementById('login-votante').style.display = "none";
     document.getElementById('pantalla-boletas').style.display = "block";
-    renderizarBoletasVotante(codigo);
+    renderizarBoletas(codigo);
 }
 
-function renderizarBoletasVotante(codigoAlumno) {
-    const contenedor = document.getElementById('contenedor-listas');
-    contenedor.innerHTML = '';
-    
+function renderizarBoletas(codigo) {
+    const cont = document.getElementById('contenedor-listas');
+    cont.innerHTML = '';
     obtenerListas().forEach(lista => {
-        contenedor.innerHTML += `
+        cont.innerHTML += `
             <div class="col s12 m6 l4">
-                <div class="card ${lista.color} darken-2 white-text center-align hoverable" style="cursor:pointer; border-radius: 10px;" onclick="emitirVoto(${lista.id}, '${codigoAlumno}')">
+                <div class="card ${lista.color} darken-2 white-text center-align hoverable" style="border-radius:12px; cursor:pointer;" onclick="emitirVoto(${lista.id}, '${codigo}')">
                     <div class="card-content">
                         <h5>Lista ${lista.numero}</h5>
                         <h4 style="font-weight:bold;">${lista.nombre}</h4>
-                        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin: 15px 0;">
-                            <p><strong>Presidente:</strong> ${lista.presi}</p>
-                            <p><strong>Vicepresidente:</strong> ${lista.vice}</p>
+                        <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; margin:15px 0;">
+                            <p style="margin:0;"><strong>Presidente:</strong> ${lista.presi}</p>
+                            <p style="margin:0;"><strong>Vicepresidente:</strong> ${lista.vice}</p>
                         </div>
-                        <button class="btn white black-text" style="font-weight:bold; width: 100%;">INGRESAR BOLETA</button>
+                        <button class="btn white black-text w100" style="font-weight:bold; border-radius:6px;">SELECCIONAR</button>
                     </div>
                 </div>
-            </div>
-        `;
+            </div>`;
     });
 }
 
-function emitirVoto(idLista, codigoAlumno) {
-    if (confirm("Estás por ingresar tu voto en la urna digital. ¿Confirmas tu selección? (El voto es secreto y definitivo)")) {
+function emitirVoto(id, cod) {
+    if (confirm("¿Ingresar tu voto a la urna digital? Esta acción no se puede deshacer.")) {
+        // Invalidar Código de Elector
+        let v = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
+        v.push(cod); localStorage.setItem('votantesRegistrados', JSON.stringify(v));
         
-        // Registrar al estudiante (para que no vuelva a votar)
-        let votantes = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
-        votantes.push(codigoAlumno);
-        localStorage.setItem('votantesRegistrados', JSON.stringify(votantes));
+        // Registrar Voto Anónimo
+        let u = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+        u.push(id); localStorage.setItem('votosEleccion', JSON.stringify(u));
 
-        // Registrar el voto (anónimo, solo se guarda el ID de la lista elegida)
-        let votosUrna = JSON.parse(localStorage.getItem('votosEleccion')) || [];
-        votosUrna.push(idLista);
-        localStorage.setItem('votosEleccion', JSON.stringify(votosUrna));
-
-        alert("¡Sufragio exitoso! Tu voto ha sido registrado en la urna digital.");
-        
-        // Resetear la terminal para el próximo estudiante
+        alert("¡Sufragio Exitoso! Voto encriptado en urna.");
         document.getElementById('pantalla-boletas').style.display = "none";
         document.getElementById('login-votante').style.display = "block";
         document.getElementById('codigo-alumno').value = "";
@@ -170,83 +233,102 @@ function emitirVoto(idLista, codigoAlumno) {
 }
 
 // ==========================================
-// 4. MÓDULO: LIBRO DE ACTAS
+// 4. LIBRO DE ACTAS MATRIZ (Exclusivo CD)
 // ==========================================
-const BASE_DATOS_ACTAS = [
-    { fecha: "15/05/2026", titulo: "Asamblea: Conformación Junta Electoral", lugar: "SUM", firma: "Aprobada" },
-    { fecha: "02/06/2026", titulo: "Resolución: Presupuesto Bufet", lugar: "Aula 4", firma: "Aprobada" }
-];
+function obtenerActas() {
+    return JSON.parse(localStorage.getItem('libroActas')) || [];
+}
 
 function renderizarActas() {
     const lista = document.getElementById('lista-actas');
     lista.innerHTML = '';
-    BASE_DATOS_ACTAS.forEach(acta => {
+    
+    let actas = obtenerActas();
+    if(actas.length === 0) lista.innerHTML = '<li class="collection-item grey-text">No hay actas digitalizadas.</li>';
+    
+    actas.slice().reverse().forEach(acta => {
         lista.innerHTML += `
-            <li class="collection-item avatar">
-                <i class="material-icons circle blue darken-2">history_edu</i>
-                <span class="title"><strong>${acta.titulo}</strong></span>
-                <p>${acta.fecha} | Lugar: ${acta.lugar} <br> <span class="green-text">Estado: ${acta.firma}</span></p>
-                <a href="#!" class="secondary-content" title="Descargar PDF"><i class="material-icons grey-text">file_download</i></a>
-            </li>
-        `;
+            <li class="collection-item">
+                <span class="title" style="font-weight:bold; font-size:1.1rem; color:#1565c0;">${acta.titulo}</span>
+                <p>
+                    <i class="material-icons tiny">event</i> ${acta.fecha} | <i class="material-icons tiny">place</i> ${acta.lugar}<br><br>
+                    <span style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #1565c0; display: block; border-radius: 4px;"><em>${acta.texto}</em></span><br>
+                    <span class="green-text text-darken-2"><i class="material-icons tiny">verified</i> <strong>Sello y Firmas:</strong> ${acta.firmas}</span>
+                </p>
+            </li>`;
     });
 }
 
+function agregarActa() {
+    const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+    const titulo = document.getElementById('acta-titulo').value.trim();
+    const fecha = document.getElementById('acta-fecha').value;
+    const lugar = document.getElementById('acta-lugar').value.trim();
+    const texto = document.getElementById('acta-texto').value.trim();
+    const firmas = document.getElementById('acta-firmas').value.trim();
+
+    if (!titulo || !fecha || !lugar || !texto || !firmas) return M.toast({html: 'Rellene todos los campos.', classes: 'red rounded'});
+    
+    const actas = obtenerActas();
+    const firmaDigital = `${firmas} (Oficializado por: CD ${user.colegio})`;
+    
+    actas.push({ titulo, fecha, lugar, texto, firmas: firmaDigital });
+    localStorage.setItem('libroActas', JSON.stringify(actas));
+    
+    document.querySelectorAll('#panel-admin-actas input, #panel-admin-actas textarea').forEach(i => i.value = '');
+    M.toast({html: 'Acta guardada en la matriz institucional.', classes: 'green rounded'});
+    renderizarActas();
+}
+
 // ==========================================
-// 5. MÓDULO: FORO INTER-CENTROS
+// 5. FORO INTER-CENTROS (Exclusivo CD)
 // ==========================================
 function obtenerPropuestas() {
-    const datos = localStorage.getItem('foroDigital');
-    return datos ? JSON.parse(datos) : [
-        { titulo: "Más tachos de reciclaje", texto: "Necesitamos separar la basura en los patios del colegio.", votos: 12 },
-        { titulo: "Torneo de E-Sports", texto: "Organizar un torneo intercolegial a fin de año.", votos: 8 }
+    return JSON.parse(localStorage.getItem('foroDigital')) || [
+        { titulo: "Campaña de Reciclaje", texto: "Separación de residuos en todos los patios.", votos: 15, colegio: "CD - IPEM 38" },
+        { titulo: "Olimpíadas Matemáticas", texto: "Torneo intercolegial de fin de año.", votos: 8, colegio: "CD - Esc. Técnica 1" }
     ];
 }
 
 function renderizarForo() {
-    const contenedor = document.getElementById('lista-propuestas');
-    contenedor.innerHTML = '';
-    const propuestas = obtenerPropuestas();
-    
-    // Ordenar de mayor a menor cantidad de votos
-    propuestas.sort((a, b) => b.votos - a.votos).forEach((prop, index) => {
-        contenedor.innerHTML += `
-            <div class="card hoverable">
+    const cont = document.getElementById('lista-propuestas');
+    cont.innerHTML = '';
+    obtenerPropuestas().sort((a, b) => b.votos - a.votos).forEach((prop, i) => {
+        cont.innerHTML += `
+            <div class="card" style="border-radius:10px;">
                 <div class="card-content">
-                    <span class="card-title" style="font-weight:bold;">${prop.titulo} <span class="badge blue white-text right" style="border-radius: 4px;">${prop.votos} votos</span></span>
+                    <span class="card-title" style="font-weight:bold;">${prop.titulo} <span class="badge blue white-text right" style="border-radius:12px;">${prop.votos} VOTOS</span></span>
                     <p>${prop.texto}</p>
+                    <br>
+                    <small class="grey-text">Proyecto Oficial Autorizado por: <strong>${prop.colegio}</strong></small>
                 </div>
                 <div class="card-action">
-                    <button class="btn-small blue lighten-1 black-text" style="font-weight:bold;" onclick="votarPropuesta(${index})"><i class="material-icons left">thumb_up</i> Apoyar Idea</button>
+                    <button class="btn-small blue lighten-1 black-text waves-effect" style="border-radius:20px; font-weight:bold;" onclick="votarPropuesta(${i})">Apoyar Proyecto</button>
                 </div>
-            </div>
-        `;
+            </div>`;
     });
 }
 
 function agregarPropuesta() {
-    const titulo = document.getElementById('titulo-propuesta').value;
-    const texto = document.getElementById('texto-propuesta').value;
+    const user = JSON.parse(sessionStorage.getItem('usuarioLogueado'));
+    const titulo = document.getElementById('titulo-propuesta').value.trim();
+    const texto = document.getElementById('texto-propuesta').value.trim();
     
-    if(!titulo || !texto) return alert("Por favor, completa el título y la descripción de tu propuesta.");
+    if(!titulo || !texto) return M.toast({html: 'Complete el formulario del proyecto.', classes: 'red rounded'});
 
-    const propuestas = obtenerPropuestas();
-    propuestas.push({ titulo, texto, votos: 0 });
-    localStorage.setItem('foroDigital', JSON.stringify(propuestas));
+    const prop = obtenerPropuestas();
+    prop.push({ titulo, texto, votos: 0, colegio: `CD - ${user.colegio}` });
+    localStorage.setItem('foroDigital', JSON.stringify(prop));
     
     document.getElementById('titulo-propuesta').value = "";
     document.getElementById('texto-propuesta').value = "";
+    M.toast({html: 'Proyecto publicado en el foro.', classes: 'green rounded'});
     renderizarForo();
 }
 
-function votarPropuesta(index) {
-    const propuestas = obtenerPropuestas();
-    propuestas[index].votos++;
-    localStorage.setItem('foroDigital', JSON.stringify(propuestas));
+function votarPropuesta(i) {
+    const prop = obtenerPropuestas();
+    prop[i].votos++;
+    localStorage.setItem('foroDigital', JSON.stringify(prop));
     renderizarForo();
 }
-
-// Iniciar la aplicación mostrando el inicio por defecto
-document.addEventListener('DOMContentLoaded', () => {
-    navegar('inicio');
-});
