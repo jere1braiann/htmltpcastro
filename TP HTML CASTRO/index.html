@@ -1,33 +1,123 @@
-        <!-- VISTA: PANEL DE JUNTA ELECTORAL (Actualizado según Res 124/2010) -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudiantes al Centro Digital</title>
+    
+    <!-- Framework Google Materialize CSS & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        body { display: flex; min-height: 100vh; flex-direction: column; background-color: #f4f6f8; }
+        main { flex: 1 0 auto; padding: 20px; }
+        .hero { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 40px 0; text-align: center; margin-bottom: 20px; border-radius: 8px;}
+        .card-menu { cursor: pointer; transition: 0.3s; height: 100%; border-radius: 10px; }
+        .card-menu:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .vista { display: none; }
+        .vista.activa { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .terminal-votacion { background-color: #263238; color: white; padding: 40px; border-radius: 10px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .boleta-preview { padding: 15px; border-radius: 8px; color: white; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="blue darken-3">
+        <div class="nav-wrapper container">
+            <a href="#" class="brand-logo" onclick="navegar('inicio')"><i class="material-icons">school</i> Centro Digital</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="#" onclick="navegar('inicio')">Inicio</a></li>
+                <li><a href="#" onclick="navegar('elecciones-portal')">Elecciones</a></li>
+                <li><a href="#" onclick="navegar('actas')">Libro de Actas</a></li>
+                <li><a href="#" onclick="navegar('foro')">Foro</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL DINÁMICO -->
+    <main id="app" class="container">
+        
+        <!-- =================== VISTA 1: INICIO =================== -->
+        <section id="vista-inicio" class="vista activa">
+            <div class="hero z-depth-2">
+                <h2>Bienvenido al Centro Digital</h2>
+                <p>Gestiona el centro de estudiantes de forma rápida, segura y transparente.</p>
+            </div>
+            <div class="row">
+                <div class="col s12 m4">
+                    <div class="card card-menu center-align" onclick="navegar('elecciones-portal')">
+                        <div class="card-content">
+                            <i class="material-icons large blue-text">how_to_vote</i>
+                            <span class="card-title">Elecciones</span>
+                            <p class="grey-text">Junta Electoral y Cuarto Oscuro</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="card card-menu center-align" onclick="navegar('actas')">
+                        <div class="card-content">
+                            <i class="material-icons large blue-text">menu_book</i>
+                            <span class="card-title">Libro de Actas</span>
+                            <p class="grey-text">Resoluciones y asambleas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="card card-menu center-align" onclick="navegar('foro')">
+                        <div class="card-content">
+                            <i class="material-icons large blue-text">forum</i>
+                            <span class="card-title">Foro de Propuestas</span>
+                            <p class="grey-text">Debate inter-centros</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== VISTA 2: PORTAL ELECTORAL =================== -->
+        <section id="vista-elecciones-portal" class="vista">
+            <h3 class="center-align">Módulo Electoral</h3>
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="card z-depth-2">
+                        <div class="card-content center-align">
+                            <i class="material-icons large grey-text text-darken-2">admin_panel_settings</i>
+                            <span class="card-title">Acceso Junta Electoral</span>
+                            <br>
+                            <input type="password" id="codigo-admin" placeholder="Código: ADMIN-IPEM38">
+                            <button class="btn blue darken-2 w100" onclick="loginAdmin()">Ingresar Panel</button>
+                            <p id="error-admin" class="red-text" style="display:none;">Código incorrecto.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m6">
+                    <div class="card terminal-votacion center-align">
+                        <i class="material-icons large">front_hand</i>
+                        <h4>Terminal de Votación</h4>
+                        <br>
+                        <button class="btn white black-text w100" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== VISTA 3: PANEL ADMIN (JUNTA ELECTORAL) =================== -->
         <section id="vista-admin-panel" class="vista">
-            <h3>Panel de Junta Electoral - IPEM 38</h3>
-            <p class="grey-text">Gestión exclusiva para autoridades de la Junta (Art. 25 y 26).</p>
+            <h3>Junta Electoral - Panel de Control</h3>
+            <p class="grey-text">Cumplimiento Resolución 124/2010 (Art. 25 a 28)</p>
             
             <div class="row">
-                <!-- FORMULARIO CARGA DE LISTAS (Art. 28) -->
                 <div class="col s12 m6">
-                    <div class="card-panel">
+                    <div class="card-panel z-depth-2">
                         <h5>Oficializar Nueva Lista</h5>
-                        <div class="input-field">
-                            <input type="number" id="input-numero" placeholder="Ej: 10">
-                            <label class="active">Número de Lista</label>
-                        </div>
-                        <div class="input-field">
-                            <input type="text" id="input-nombre-partido" placeholder="Ej: Frente Estudiantil Unido">
-                            <label class="active">Nombre del Partido / Lista</label>
-                        </div>
-                        <div class="input-field">
-                            <input type="text" id="input-presidente" placeholder="Ej: Axel Castro">
-                            <label class="active">Candidato/a a Presidente</label>
-                        </div>
-                        <div class="input-field">
-                            <input type="text" id="input-vicepresidente" placeholder="Ej: María Gómez">
-                            <label class="active">Candidato/a a Vicepresidente</label>
-                        </div>
-                        <div class="input-field">
-                            <input type="text" id="input-curso" placeholder="Ej: 5to Año A">
-                            <label class="active">Curso de los candidatos</label>
-                        </div>
+                        <div class="input-field"><input type="number" id="input-numero"><label>Número de Lista</label></div>
+                        <div class="input-field"><input type="text" id="input-nombre-partido"><label>Nombre del Partido / Lista</label></div>
+                        <div class="input-field"><input type="text" id="input-presidente"><label>Candidato/a a Presidente</label></div>
+                        <div class="input-field"><input type="text" id="input-vicepresidente"><label>Candidato/a a Vicepresidente</label></div>
+                        <div class="input-field"><input type="text" id="input-curso"><label>Curso de los candidatos</label></div>
                         
                         <label>Color de la Boleta</label>
                         <select class="browser-default" id="input-color" style="margin-bottom: 15px;">
@@ -39,35 +129,92 @@
                             <option value="purple">Morado</option>
                         </select>
 
-                        <!-- Requisito Legal: Aval del 10% del padrón -->
                         <p>
                             <label>
                                 <input type="checkbox" id="check-aval" class="filled-in" />
-                                <span>Presenta aval escrito del 10% del padrón (Art. 28 inc. d)</span>
+                                <span>Presenta aval escrito del 10% del padrón (Art. 28)</span>
                             </label>
                         </p>
                         <br>
-                        <button class="btn green w100" onclick="agregarLista()">Oficializar Lista</button>
+                        <button class="btn green darken-1 w100" onclick="agregarLista()"><i class="material-icons left">check_circle</i> Oficializar Lista</button>
                     </div>
                 </div>
 
-                <!-- ESTADO URNA Y LISTAS ACTIVAS -->
                 <div class="col s12 m6">
-                    <div class="card-panel blue darken-3 white-text center-align">
+                    <div class="card-panel blue darken-4 white-text center-align z-depth-2">
                         <h6>Estado de la Urna Digital</h6>
-                        <h2 id="contador-votos" style="margin: 10px 0;">0</h2>
+                        <h2 id="contador-votos" style="margin: 10px 0; font-size: 4rem;">0</h2>
                         <p>Votos emitidos</p>
                     </div>
                     
-                    <div class="card-panel">
-                        <h5>Listas Oficializadas para Votar</h5>
-                        <div id="admin-listas-activas">
-                            <!-- JS llena esto -->
-                        </div>
+                    <div class="card-panel z-depth-2">
+                        <h5>Listas Habilitadas</h5>
+                        <div id="admin-listas-activas"></div>
                         <br>
-                        <button class="btn red w100" onclick="resetearUrna()">Reiniciar Elección (Borrar Todo)</button>
+                        <button class="btn red darken-2 w100" onclick="resetearUrna()"><i class="material-icons left">delete_forever</i> Reiniciar Elección</button>
                     </div>
                 </div>
             </div>
-            <button class="btn grey" onclick="navegar('elecciones-portal')">Cerrar Panel</button>
+            <button class="btn grey" onclick="navegar('elecciones-portal')"><i class="material-icons left">arrow_back</i> Cerrar Panel</button>
         </section>
+
+        <!-- =================== VISTA 4: TERMINAL DE VOTACIÓN =================== -->
+        <section id="vista-elecciones-terminal" class="vista">
+            <div class="terminal-votacion">
+                <h3 class="center-align">Cuarto Oscuro Digital</h3>
+                
+                <div id="login-votante" style="max-width: 400px; margin: 0 auto; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                    <p class="center-align">Ingresa tu Código de Identificación Único:</p>
+                    <input type="text" id="codigo-alumno" placeholder="Ej: ALUMNO-1" class="white-text center-align" style="font-size: 1.5rem;">
+                    <button class="btn blue lighten-1 w100 black-text" style="font-weight: bold;" onclick="iniciarVotacion()">VALIDAR IDENTIDAD</button>
+                    <p id="error-login" class="red-text center-align" style="display:none; margin-top: 10px; font-weight: bold;"></p>
+                    <br><br>
+                    <button class="btn-flat grey-text w100 center-align" onclick="navegar('elecciones-portal')">Salir del Cuarto Oscuro</button>
+                </div>
+
+                <div id="pantalla-boletas" style="display:none;">
+                    <h5 class="center-align">Selecciona tu boleta:</h5>
+                    <br>
+                    <div class="row" id="contenedor-listas"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== VISTA 5: LIBRO DE ACTAS =================== -->
+        <section id="vista-actas" class="vista">
+            <h3>Libro de Actas Digital</h3>
+            <p class="grey-text">Memoria histórica y legal del Centro de Estudiantes.</p>
+            <ul class="collection z-depth-1" id="lista-actas"></ul>
+        </section>
+
+        <!-- =================== VISTA 6: FORO =================== -->
+        <section id="vista-foro" class="vista">
+            <h3>Foro Inter-Centros</h3>
+            <p class="grey-text">Debate y votación de propuestas.</p>
+            <div class="row">
+                <div class="col s12 m8" id="lista-propuestas"></div>
+                <div class="col s12 m4">
+                    <div class="card-panel grey lighten-4 z-depth-1">
+                        <h5>Nueva Propuesta</h5>
+                        <div class="input-field"><input type="text" id="titulo-propuesta"><label>Título</label></div>
+                        <div class="input-field"><textarea id="texto-propuesta" class="materialize-textarea"></textarea><label>Describe tu idea...</label></div>
+                        <button class="btn green w100" onclick="agregarPropuesta()">Publicar Idea</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="page-footer blue darken-4" style="margin-top: auto;">
+        <div class="footer-copyright center-align">
+            <div class="container">© 2026 Estudiantes al Centro Digital - Versión de Prueba</div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
