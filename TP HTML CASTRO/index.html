@@ -1,107 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudiantes al Centro Digital</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        body { display: flex; min-height: 100vh; flex-direction: column; background-color: #f4f6f8; }
-        main { flex: 1 0 auto; padding: 20px; }
-        .hero { background: #1976d2; color: white; padding: 40px 0; text-align: center; margin-bottom: 20px; border-radius: 8px;}
-        .card-menu { cursor: pointer; transition: 0.3s; height: 100%; }
-        .card-menu:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
-        .vista { display: none; }
-        .vista.activa { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .terminal-votacion { background-color: #263238; color: white; padding: 40px; border-radius: 10px; }
-        .boleta-preview { padding: 15px; border-radius: 8px; color: white; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-
-    <nav class="blue darken-3">
-        <div class="nav-wrapper container">
-            <a href="#" class="brand-logo" onclick="navegar('inicio')"><i class="material-icons">school</i> Centro Digital</a>
-            <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li><a href="#" onclick="navegar('inicio')">Inicio</a></li>
-                <li><a href="#" onclick="navegar('elecciones-portal')">Elecciones</a></li>
-                <li><a href="#" onclick="navegar('actas')">Libro de Actas</a></li>
-                <li><a href="#" onclick="navegar('foro')">Foro</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <main id="app" class="container">
-        
-        <!-- VISTA: INICIO -->
-        <section id="vista-inicio" class="vista activa">
-            <div class="hero">
-                <h2>Bienvenido al Centro Digital</h2>
-                <p>Gestiona tu centro de estudiantes de forma rápida y transparente.</p>
-            </div>
-            <div class="row">
-                <div class="col s12 m4">
-                    <div class="card card-menu center-align" onclick="navegar('elecciones-portal')">
-                        <div class="card-content">
-                            <i class="material-icons large blue-text">how_to_vote</i>
-                            <span class="card-title">Elecciones</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col s12 m4">
-                    <div class="card card-menu center-align" onclick="navegar('actas')">
-                        <div class="card-content">
-                            <i class="material-icons large blue-text">menu_book</i>
-                            <span class="card-title">Libro de Actas</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col s12 m4">
-                    <div class="card card-menu center-align" onclick="navegar('foro')">
-                        <div class="card-content">
-                            <i class="material-icons large blue-text">forum</i>
-                            <span class="card-title">Foro de Propuestas</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTA: PORTAL DE ELECCIONES -->
-        <section id="vista-elecciones-portal" class="vista">
-            <h3 class="center-align">Módulo Electoral</h3>
-            <div class="row">
-                <div class="col s12 m6">
-                    <div class="card">
-                        <div class="card-content center-align">
-                            <i class="material-icons large grey-text">admin_panel_settings</i>
-                            <span class="card-title">Acceso Autoridad</span>
-                            <br>
-                            <input type="password" id="codigo-admin" placeholder="Código: ADMIN-IPEM38">
-                            <button class="btn blue darken-2 w100" onclick="loginAdmin()">Ingresar Panel</button>
-                            <p id="error-admin" class="red-text" style="display:none;">Código incorrecto.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col s12 m6">
-                    <div class="card terminal-votacion center-align">
-                        <i class="material-icons large">front_hand</i>
-                        <h4>Terminal de Votación</h4>
-                        <br>
-                        <button class="btn white black-text w100" onclick="navegar('elecciones-terminal')">Abrir Cuarto Oscuro</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTA: PANEL ADMIN (NUEVA ESTRUCTURA) -->
+        <!-- VISTA: PANEL DE JUNTA ELECTORAL (Actualizado según Res 124/2010) -->
         <section id="vista-admin-panel" class="vista">
             <h3>Panel de Junta Electoral - IPEM 38</h3>
+            <p class="grey-text">Gestión exclusiva para autoridades de la Junta (Art. 25 y 26).</p>
             
             <div class="row">
-                <!-- FORMULARIO CARGA DE LISTAS -->
+                <!-- FORMULARIO CARGA DE LISTAS (Art. 28) -->
                 <div class="col s12 m6">
                     <div class="card-panel">
                         <h5>Oficializar Nueva Lista</h5>
@@ -110,32 +13,48 @@
                             <label class="active">Número de Lista</label>
                         </div>
                         <div class="input-field">
-                            <input type="text" id="input-nombre-partido" placeholder="Ej: Frente Estudiantil">
+                            <input type="text" id="input-nombre-partido" placeholder="Ej: Frente Estudiantil Unido">
                             <label class="active">Nombre del Partido / Lista</label>
                         </div>
                         <div class="input-field">
                             <input type="text" id="input-presidente" placeholder="Ej: Axel Castro">
                             <label class="active">Candidato/a a Presidente</label>
                         </div>
+                        <div class="input-field">
+                            <input type="text" id="input-vicepresidente" placeholder="Ej: María Gómez">
+                            <label class="active">Candidato/a a Vicepresidente</label>
+                        </div>
+                        <div class="input-field">
+                            <input type="text" id="input-curso" placeholder="Ej: 5to Año A">
+                            <label class="active">Curso de los candidatos</label>
+                        </div>
+                        
                         <label>Color de la Boleta</label>
-                        <select class="browser-default" id="input-color">
+                        <select class="browser-default" id="input-color" style="margin-bottom: 15px;">
                             <option value="" disabled selected>Elige un color</option>
                             <option value="red">Rojo</option>
                             <option value="blue">Azul</option>
                             <option value="green">Verde</option>
                             <option value="orange">Naranja</option>
                             <option value="purple">Morado</option>
-                            <option value="grey">Gris (Voto en Blanco)</option>
                         </select>
+
+                        <!-- Requisito Legal: Aval del 10% del padrón -->
+                        <p>
+                            <label>
+                                <input type="checkbox" id="check-aval" class="filled-in" />
+                                <span>Presenta aval escrito del 10% del padrón (Art. 28 inc. d)</span>
+                            </label>
+                        </p>
                         <br>
-                        <button class="btn green w100" onclick="agregarLista()">Cargar Lista</button>
+                        <button class="btn green w100" onclick="agregarLista()">Oficializar Lista</button>
                     </div>
                 </div>
 
                 <!-- ESTADO URNA Y LISTAS ACTIVAS -->
                 <div class="col s12 m6">
                     <div class="card-panel blue darken-3 white-text center-align">
-                        <h6>Estado de la Urna</h6>
+                        <h6>Estado de la Urna Digital</h6>
                         <h2 id="contador-votos" style="margin: 10px 0;">0</h2>
                         <p>Votos emitidos</p>
                     </div>
@@ -152,44 +71,3 @@
             </div>
             <button class="btn grey" onclick="navegar('elecciones-portal')">Cerrar Panel</button>
         </section>
-
-        <!-- VISTA: TERMINAL DE VOTACIÓN (Cuarto Oscuro) -->
-        <section id="vista-elecciones-terminal" class="vista">
-            <div class="terminal-votacion">
-                <h3 class="center-align">Cuarto Oscuro Digital</h3>
-                
-                <div id="login-votante" style="max-width: 400px; margin: 0 auto; padding: 20px;">
-                    <p>Ingresa tu Código de Identificación Único:</p>
-                    <input type="text" id="codigo-alumno" placeholder="Ej: ALUMNO-1" class="white-text">
-                    <button class="btn blue w100" onclick="iniciarVotacion()">Validar Identidad</button>
-                    <p id="error-login" class="red-text" style="display:none;">Código inválido o ya votaste.</p>
-                    <br><br>
-                    <button class="btn-flat grey-text" onclick="navegar('elecciones-portal')">< Volver al Portal</button>
-                </div>
-
-                <div id="pantalla-boletas" style="display:none;">
-                    <p class="center-align">Selecciona tu lista completa:</p>
-                    <div class="row" id="contenedor-listas">
-                        <!-- Las tarjetas se generan por JS -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTAS ACTAS Y FORO -->
-        <section id="vista-actas" class="vista">
-            <h3>Libro de Actas Digital</h3>
-            <ul class="collection" id="lista-actas"></ul>
-        </section>
-
-        <section id="vista-foro" class="vista">
-            <h3>Foro Inter-Centros</h3>
-            <div class="row">
-                <div class="col s12 m8" id="lista-propuestas"></div>
-            </div>
-        </section>
-
-    </main>
-    <script src="app.js"></script>
-</body>
-</html>
