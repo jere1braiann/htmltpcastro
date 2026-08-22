@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Elecciones - Estudiantes al Centro</title>
+    <style>
+        :root {
+            --azul-cba: #003876;
+            --celeste-cba: #5b9bd5;
+            --rojo-cba: #c2002f;
+            --dorado-cba: #c49a45;
+            --fondo: #f4f6f9;
+            --blanco: #ffffff;
+            --texto: #333333;
+            --gris-claro: #e0e0e0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--fondo); color: var(--texto); }
+
+        /* Encabezado */
+        header {
+            background-color: var(--blanco);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--azul-cba);
+        }
+        .logos-container img { height: 50px; object-fit: contain; }
+        
+        /* Navegación y Login */
+        nav {
+            background-color: var(--azul-cba);
+            padding: 10px 5%;
+            display: flex;
+            gap: 15px;
+            display: none; /* Oculto hasta login */
+        }
+        nav button {
+            background-color: transparent; color: var(--blanco); border: 1px solid var(--blanco);
+            padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+        nav button.active, nav button:hover { background-color: var(--blanco); color: var(--azul-cba); }
+        .btn-logout { margin-left: auto; background-color: var(--rojo-cba) !important; border-color: var(--rojo-cba) !important; }
+
+        /* Contenedores */
+        .panel { display: none; padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
+        .panel.active { display: block; }
+        h2 { color: var(--azul-cba); margin-bottom: 20px; border-bottom: 2px solid var(--celeste-cba); padding-bottom: 10px; }
+        h3 { color: var(--texto); margin: 15px 0; }
+
+        /* Formularios y Botones */
+        .form-group { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-primary { background-color: var(--azul-cba); color: var(--blanco); border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-success { background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background-color: var(--rojo-cba); }
+
+        /* Tablas */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: var(--blanco); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gris-claro); }
+        th { background-color: var(--azul-cba); color: var(--blanco); }
+
+        /* Urna y Boletas */
+        .urna-container { text-align: center; background: var(--blanco); padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .input-urna { font-size: 24px; padding: 15px; text-align: center; letter-spacing: 5px; width: 200px; border: 2px solid var(--azul-cba); }
+        .boletas-grid { display: none; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
+        .boleta { border: 3px solid #ccc; border-radius: 8px; padding: 20px; width: 250px; background: var(--fondo); text-align: center; }
+        .boleta button { width: 100%; margin-top: 15px; padding: 15px; font-size: 16px; }
+
+        /* Resultados Horizontales */
+        .tabla-horizontal-container { display: flex; overflow-x: auto; background: var(--blanco); box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 8px; }
+        .columna-datos { display: flex; flex-direction: column; min-width: 250px; border-right: 1px solid #ddd; }
+        .columna-datos:first-child { background-color: var(--azul-cba); color: var(--blanco); font-weight: bold; }
+        .celda { padding: 20px; border-bottom: 1px solid #ddd; height: 100px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .celda-header { font-size: 18px; font-weight: bold; height: 60px; background-color: rgba(0,0,0,0.05); }
+        .ganador { background-color: #e8f4fa; } .minoria { background-color: #fdf5e6; }
+
+        /* Login */
+        .login-box { max-width: 400px; margin: 100px auto; background: var(--blanco); padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .login-box input { width: 100%; margin-bottom: 15px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logos-container">
+            <img src="Agencia-Cordoba-JOVEN_Convivencia-color.png" alt="Agencia Córdoba Joven">
+        </div>
+        <div class="logos-container">
+            <img src="ESTUDIANTES-AL-CENTRO-1080-720.jpg.jpeg" alt="Estudiantes al Centro">
+        </div>
+    </header>
+
+    <nav id="nav-menu">
+        <button id="btn-nav-superadmin" onclick="cambiarPanel('panel-superadmin')" style="display:none;">Superadmin</button>
+        <button id="btn-nav-admin" onclick="cambiarPanel('panel-admin')" style="display:none;">Junta Electoral</button>
+        <button id="btn-nav-urna" onclick="cambiarPanel('panel-urna')" style="display:none;">Terminal Urna</button>
+        <button id="btn-nav-resultados" onclick="cambiarPanel('panel-resultados')" style="display:none;">Resultados</button>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </nav>
+
+    <!-- PANEL LOGIN -->
+    <section id="panel-login" class="panel active">
+        <div class="login-box">
+            <h2 style="border:none;">Ingreso a la Plataforma</h2>
+            <input type="text" id="login-user" placeholder="Usuario">
+            <input type="password" id="login-pass" placeholder="Contraseña">
+            <button class="btn-primary" style="width: 100%;" onclick="login()">Ingresar</button>
+            <p style="margin-top: 15px; font-size: 12px; color: #666;">Credenciales: superadmin / junta / urna</p>
+        </div>
+    </section>
+
+    <!-- PANEL SUPERADMIN -->
+    <section id="panel-superadmin" class="panel">
+        <h2>Panel de Soporte Provincial</h2>
+        <p>Vista general de colegios conectados. (Módulo en desarrollo para monitoreo provincial).</p>
+    </section>
+
+    <!-- PANEL JUNTA ELECTORAL (ADMIN) -->
+    <section id="panel-admin" class="panel">
+        <h2>Panel de la Junta Electoral</h2>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <!-- Carga de Listas -->
+            <div style="flex: 1; min-width: 300px; background: var(--blanco); padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h3>1. Oficialización de Listas</h3>
+                <div class="form-group">
+                    <input type="text" id="lista-nombre" placeholder="Nombre de Lista">
+                    <input type="text" id="lista-candidato" placeholder="Candidato a Presidencia">
+                    <input type="color" id="lista-color" value="#5b9bd5">
+                    <button class="btn-primary" onclick="agregarLista()">Cargar</button>
+                </div>
+                <table id="tabla-listas">
+                    <thead><tr><th>Lista</th><th>Presidente</th><th>Color</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Carga de Padrón -->
+            <div style="flex: 1; min-width: 300px; background: var(--blanco); padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h3>2. Carga de Padrón Electoral</h3>
+                <div class="form-group">
+                    <input type="text" id="alumno-nombre" placeholder="Nombre del Alumno">
+                    <input type="text" id="alumno-curso" placeholder="Curso (Ej: 5to B)" style="width: 100px;">
+                    <select id="alumno-turno">
+                        <option value="Mañana">Mañana</option>
+                        <option value="Tarde">Tarde</option>
+                    </select>
+                    <button class="btn-primary" onclick="agregarAlumno()">Cargar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de Mesa y Tokens -->
+        <div style="margin-top: 20px; background: var(--blanco); padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h3>3. Mesa de Autoridades (Emisión de Tokens)</h3>
+            <table id="tabla-padron">
+                <thead><tr><th>Alumno</th><th>Curso</th><th>Turno</th><th>Estado</th><th>Acción Mesa</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn-primary btn-danger" onclick="cerrarComicios()">Cerrar Comicios y Calcular</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PANEL URNA (ELECTOR) -->
+    <section id="panel-urna" class="panel">
+        <div class="urna-container">
+            <h2>Cuarto Oscuro Digital</h2>
+            
+            <div id="urna-login">
+                <p style="margin-bottom: 20px;">Ingrese el PIN generado por la mesa de autoridades para habilitar su voto:</p>
+                <input type="text" id="token-ingresado" class="input-urna" maxlength="4" placeholder="0000">
+                <br><br>
+                <button class="btn-primary" onclick="validarTokenVoto()">Habilitar Boletas</button>
+            </div>
+
+            <div id="urna-boletas" class="boletas-grid">
+                <!-- Se inyectan dinámicamente -->
+            </div>
+        </div>
+    </section>
+
+    <!-- PANEL RESULTADOS -->
+    <section id="panel-resultados" class="panel">
+        <h2>Escrutinio Proporcional Definitivo</h2>
+        <div class="tabla-horizontal-container" id="contenedor-resultados-horizontales">
+            <!-- Se construye dinámicamente -->
+        </div>
+    </section>
+
+    <script>
+        // Bases de datos simuladas
+        let listas = [];
+        let padron = [];
+        let votosBlanco = 0;
+        let tokenActivoParaVotar = null; // Almacena el ID del elector validado
+
+        // RBAC - Login simulado
+        function login() {
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+
+            document.getElementById('nav-menu').style.display = 'flex';
+            
+            if (user === 'superadmin' && pass === 'admin123') {
+                document.getElementById('btn-nav-superadmin').style.display = 'block';
+                cambiarPanel('panel-superadmin');
+            } else if (user === 'junta' && pass === 'junta123') {
+                document.getElementById('btn-nav-admin').style.display = 'block';
+                document.getElementById('btn-nav-resultados').style.display = 'block';
+                cambiarPanel('panel-admin');
+            } else if (user === 'urna' && pass === 'urna123') {
+                document.getElementById('btn-nav-urna').style.display = 'block';
+                document.getElementById('nav-menu').style.display = 'none'; // Urna no debe poder navegar
+                cambiarPanel('panel-urna');
+            } else {
+                alert('Credenciales incorrectas');
+                document.getElementById('nav-menu').style.display = 'none';
+            }
+        }
+
+        function logout() {
+            document.querySelectorAll('nav button').forEach(b => {
+                if(!b.classList.contains('btn-logout')) b.style.display = 'none';
+            });
+            document.getElementById('nav-menu').style.display = 'none';
+            document.getElementById('login-user').value = '';
+            document.getElementById('login-pass').value = '';
+            cambiarPanel('panel-login');
+        }
+
+        function cambiarPanel(idPanel) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(idPanel).classList.add('active');
+            if(event && event.target.tagName === 'BUTTON') event.target.classList.add('active');
+        }
+
+        // ---- LÓGICA JUNTA ELECTORAL ----
+
+        function agregarLista() {
+            const nombre = document.getElementById('lista-nombre').value;
+            const candidato = document.getElementById('lista-candidato').value;
+            const color = document.getElementById('lista-color').value;
+
+            if(!nombre) return alert('Ingrese nombre de lista');
+
+            const idLista = 'lista_' + Date.now();
+            listas.push({ id: idLista, nombre, candidato, color, votos: 0 });
+            
+            actualizarTablaListas();
+            document.getElementById('lista-nombre').value = '';
+            document.getElementById('lista-candidato').value = '';
+        }
+
+        function actualizarTablaListas() {
+            const tbody = document.querySelector('#tabla-listas tbody');
+            tbody.innerHTML = '';
+            listas.forEach(l => {
+                tbody.innerHTML += `<tr>
+                    <td style="color:${l.color}; font-weight:bold;">${l.nombre}</td>
+                    <td>${l.candidato}</td>
+                    <td><div style="width:20px;height:20px;background:${l.color};border-radius:3px;"></div></td>
+                </tr>`;
+            });
+        }
+
+        function agregarAlumno() {
+            const nombre = document.getElementById('alumno-nombre').value;
+            const curso = document.getElementById('alumno-curso').value;
+            const turno = document.getElementById('alumno-turno').value;
+
+            if(!nombre || !curso) return alert('Complete nombre y curso');
+
+            padron.push({ id: Date.now(), nombre, curso, turno, token: null, emitioVoto: false });
+            actualizarTablaPadron();
+            document.getElementById('alumno-nombre').value = '';
+        }
+
+        function actualizarTablaPadron() {
+            const tbody = document.querySelector('#tabla-padron tbody');
+            tbody.innerHTML = '';
+            padron.forEach(a => {
+                let estado = a.emitioVoto ? '<span style="color:red">Votó</span>' : '<span style="color:green">Habilitado</span>';
+                let accion = '';
+                
+                if (a.emitioVoto) {
+                    accion = 'Completado';
+                } else if (a.token) {
+                    accion = `<strong style="font-size:18px; color:var(--rojo-cba)">PIN: ${a.token}</strong>`;
+                } else {
+                    accion = `<button class="btn-success" onclick="generarTokenParaAlumno(${a.id})">Emitir Token</button>`;
+                }
+
+                tbody.innerHTML += `<tr>
+                    <td>${a.nombre}</td><td>${a.curso}</td><td>${a.turno}</td>
+                    <td>${estado}</td><td>${accion}</td>
+                </tr>`;
+            });
+        }
+
+        function generarTokenParaAlumno(id) {
+            const alumno = padron.find(a => a.id === id);
+            alumno.token = Math.floor(1000 + Math.random() * 9000).toString();
+            actualizarTablaPadron();
+        }
+
+        // ---- LÓGICA URNA (ELECTOR) ----
+
+        function validarTokenVoto() {
+            const tokenInput = document.getElementById('token-ingresado').value;
+            const alumno = padron.find(a => a.token === tokenInput);
+
+            if (alumno && !alumno.emitioVoto) {
+                tokenActivoParaVotar = alumno.id;
+                prepararBoletas();
+                document.getElementById('urna-login').style.display = 'none';
+                document.getElementById('urna-boletas').style.display = 'flex';
+            } else {
+                alert('Token inválido o el elector ya emitió su voto.');
+            }
+        }
+
+        function prepararBoletas() {
+            const container = document.getElementById('urna-boletas');
+            container.innerHTML = '';
+            
+            listas.forEach(l => {
+                container.innerHTML += `
+                <div class="boleta" style="border-color:${l.color}">
+                    <h3 style="color:${l.color}">${l.nombre}</h3>
+                    <p>${l.candidato}</p>
+                    <button class="btn-primary" style="background-color:${l.color}" onclick="registrarVoto('${l.id}')">VOTAR</button>
+                </div>`;
+            });
+
+            // Voto en blanco
+            container.innerHTML += `
+                <div class="boleta" style="border-color:#999">
+                    <h3 style="color:#666">Voto en Blanco</h3>
+                    <button class="btn-primary" style="background-color:#666" onclick="registrarVoto('blanco')">VOTAR EN BLANCO</button>
+                </div>`;
+        }
+
+        function registrarVoto(opcionId) {
+            // Contar el voto
+            if (opcionId === 'blanco') {
+                votosBlanco++;
+            } else {
+                const lista = listas.find(l => l.id === opcionId);
+                if(lista) lista.votos++;
+            }
+
+            // Marcar alumno como votado
+            const alumno = padron.find(a => a.id === tokenActivoParaVotar);
+            alumno.emitioVoto = true;
+            alumno.token = null; // Invalida el token
+            tokenActivoParaVotar = null;
+
+            // Resetear urna
+            document.getElementById('token-ingresado').value = '';
+            document.getElementById('urna-boletas').style.display = 'none';
+            document.getElementById('urna-login').style.display = 'block';
+            
+            // Actualizar panel admin silenciosamente (si estuviera en 2 ventanas)
+            actualizarTablaPadron();
+            
+            alert('Su voto ha sido registrado e ingresado a la urna digital.');
+        }
+
+        // ---- LÓGICA RESULTADOS (PROPORCIONALIDAD) ----
+
+        function cerrarComicios() {
+            if(listas.length === 0) return alert('No hay listas cargadas.');
+            if(confirm('¿Desea cerrar la urna y realizar el cálculo proporcional?')) {
+                calcularEscrutinio();
+                cambiarPanel('panel-resultados');
+            }
+        }
+
+        function calcularEscrutinio() {
+            const contenedor = document.getElementById('contenedor-resultados-horizontales');
+            
+            let votosValidos = listas.reduce((acc, l) => acc + l.votos, 0) + votosBlanco;
+            
+            // Ordenar listas por cantidad de votos (Mayor a menor)
+            let listasOrdenadas = [...listas].sort((a, b) => b.votos - a.votos);
+
+            let html = `
+                <div class="columna-datos">
+                    <div class="celda celda-header">Métricas y Cargos</div>
+                    <div class="celda">Votos Obtenidos</div>
+                    <div class="celda">Porcentaje (Válidos)</div>
+                    <div class="celda">Representación en Comisión</div>
+                </div>`;
+
+            listasOrdenadas.forEach((l, index) => {
+                let porcentaje = votosValidos > 0 ? ((l.votos / votosValidos) * 100) : 0;
+                let cssClass = index === 0 ? 'ganador' : '';
+                let cargos = "Ninguno (No alcanza 20%)";
+
+                if (index === 0) {
+                    // Si el segundo lugar supera el 20%, la mayoría cede cargos.
+                    let minoriasSuperan20 = listasOrdenadas.length > 1 && ((listasOrdenadas[1].votos / votosValidos) * 100) >= 20;
+                    cargos = minoriasSuperan20 ? "Presidencia + Vice + 4 Secretarías" : "Presidencia + Vice + 6 Secretarías (Absoluta)";
+                } else if (porcentaje >= 20) {
+                    cssClass = 'minoria';
+                    cargos = "2 Secretarías (Art. 30 Estatuto)";
+                }
+
+                html += `
+                <div class="columna-datos ${cssClass}">
+                    <div class="celda celda-header" style="color:${l.color}">${l.nombre}</div>
+                    <div class="celda">${l.votos}</div>
+                    <div class="celda">${porcentaje.toFixed(1)}%</div>
+                    <div class="celda" style="font-size:14px;">${cargos}</div>
+                </div>`;
+            });
+
+            // Columna de blancos
+            let porcBlanco = votosValidos > 0 ? ((votosBlanco / votosValidos) * 100) : 0;
+            html += `
+                <div class="columna-datos">
+                    <div class="celda celda-header">Votos en Blanco</div>
+                    <div class="celda">${votosBlanco}</div>
+                    <div class="celda">${porcBlanco.toFixed(1)}%</div>
+                    <div class="celda">N/A</div>
+                </div>`;
+
+            contenedor.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
