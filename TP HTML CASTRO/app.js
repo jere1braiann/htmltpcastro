@@ -2,23 +2,60 @@
 // 1. SISTEMA DE NAVEGACIÓN (Router SPA)
 // ==========================================
 function navegar(idVista) {
-    // Oculta todas las secciones
     document.querySelectorAll('.vista').forEach(seccion => {
         seccion.classList.remove('activa');
     });
-    // Muestra solo la solicitada
     document.getElementById(`vista-${idVista}`).classList.add('activa');
 
-    // Ejecuta funciones específicas al entrar a una vista
     if (idVista === 'actas') renderizarActas();
     if (idVista === 'foro') renderizarForo();
+    if (idVista === 'admin-panel') renderizarResultados();
 }
 
 // ==========================================
-// 2. MÓDULO DE ELECCIONES (Simulador)
+// 2. MÓDULO ELECTORAL - ADMIN
+// ==========================================
+const CREDENCIAL_ADMIN = "ADMIN-IPEM38";
+
+function loginAdmin() {
+    const input = document.getElementById('codigo-admin').value.trim();
+    const error = document.getElementById('error-admin');
+    
+    if (input === CREDENCIAL_ADMIN) {
+        error.style.display = "none";
+        document.getElementById('codigo-admin').value = ""; // limpia el campo
+        navegar('admin-panel');
+    } else {
+        error.style.display = "block";
+    }
+}
+
+function renderizarResultados() {
+    // Cuenta cuántos votos totales hay en LocalStorage (simulando la DB)
+    const votosStorage = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+    document.getElementById('contador-votos').innerText = votosStorage.length;
+
+    // Cuenta votos por lista
+    const contenedorResultados = document.getElementById('resultados-lista');
+    contenedorResultados.innerHTML = "";
+
+    listasElectorales.forEach(lista => {
+        // Filtra y cuenta cuántos votos tiene esta lista
+        const cantidad = votosStorage.filter(voto => voto === lista.id).length;
+        contenedorResultados.innerHTML += `
+            <li class="collection-item">
+                <span class="title"><strong>${lista.nombre}</strong></span>
+                <span class="badge blue white-text">${cantidad} votos</span>
+            </li>
+        `;
+    });
+}
+
+// ==========================================
+// 3. MÓDULO ELECTORAL - TERMINAL (Cuarto Oscuro)
 // ==========================================
 const padronSimulado = ["ALUMNO-1", "ALUMNO-2", "ALUMNO-3"];
-let alumnosQueYaVotaron = [];
+let alumnosQueYaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
 
 const listasElectorales = [
     { id: 1, nombre: "Frente Estudiantil Unido", presi: "Ana García", color: "red" },
@@ -31,18 +68,19 @@ function iniciarVotacion() {
     const msjError = document.getElementById('error-login');
 
     if (!padronSimulado.includes(codigo)) {
-        msjError.innerText = "Ese código no existe en el padrón.";
+        msjError.innerText = "Código de padrón inválido.";
         msjError.style.display = "block";
         return;
     }
 
     if (alumnosQueYaVotaron.includes(codigo)) {
-        msjError.innerText = "Este código ya emitió su voto.";
+        msjError.innerText = "Atención: Este código ya emitió su voto.";
         msjError.style.display = "block";
         return;
     }
 
-    // Si pasa validaciones, muestra el cuarto oscuro
+    // Validado -> Entra al cuarto oscuro
+    msjError.style.display = "none";
     document.getElementById('login-votante').style.display = "none";
     document.getElementById('pantalla-boletas').style.display = "block";
     renderizarBoletas(codigo);
@@ -55,12 +93,12 @@ function renderizarBoletas(codigoAlumno) {
     listasElectorales.forEach(lista => {
         contenedor.innerHTML += `
             <div class="col s12 m4">
-                <div class="card ${lista.color} lighten-2 white-text center-align" style="cursor:pointer;" onclick="emitirVoto(${lista.id}, '${codigoAlumno}')">
+                <div class="card ${lista.color} darken-2 white-text center-align" style="cursor:pointer;" onclick="emitirVoto(${lista.id}, '${codigoAlumno}')">
                     <div class="card-content">
                         <h4>${lista.nombre}</h4>
                         <p>Presidente: ${lista.presi}</p>
                         <br>
-                        <button class="btn white black-text">VOTAR</button>
+                        <button class="btn white black-text">SELECCIONAR</button>
                     </div>
                 </div>
             </div>
@@ -69,21 +107,27 @@ function renderizarBoletas(codigoAlumno) {
 }
 
 function emitirVoto(idLista, codigoAlumno) {
-    if (confirm("¿Confirmas tu voto? Es secreto y definitivo.")) {
-        // En una app real, el código se borra aquí. En la maqueta lo guardamos para bloquearlo.
-        alumnosQueYaVotaron.push(codigoAlumno); 
-        alert("¡Voto registrado con éxito!");
+    if (confirm("¿Confirmas tu voto?")) {
+        // 1. Guardar que el alumno votó (Para que no vuelva a entrar)
+        alumnosQueYaVotaron.push(codigoAlumno);
+        localStorage.setItem('votantesRegistrados', JSON.stringify(alumnosQueYaVotaron));
+
+        // 2. Guardar el voto en la "Urna" de forma anónima (Solo el ID de la lista)
+        const votosUrna = JSON.parse(localStorage.getItem('votosEleccion')) || [];
+        votosUrna.push(idLista);
+        localStorage.setItem('votosEleccion', JSON.stringify(votosUrna));
+
+        alert("¡Voto registrado en la urna digital!");
         
-        // Resetea la terminal para el siguiente alumno
+        // 3. Resetear para el siguiente alumno
         document.getElementById('pantalla-boletas').style.display = "none";
         document.getElementById('login-votante').style.display = "block";
         document.getElementById('codigo-alumno').value = "";
-        navegar('inicio');
     }
 }
 
 // ==========================================
-// 3. MÓDULO DE ACTAS (Simulador de Base de Datos)
+// 4. MÓDULOS ACTAS Y FORO (Sin cambios mayores)
 // ==========================================
 const baseDatosActas = [
     { fecha: "15/05/2026", titulo: "Asamblea Conformación Junta Electoral", lugar: "SUM" },
@@ -93,7 +137,6 @@ const baseDatosActas = [
 function renderizarActas() {
     const lista = document.getElementById('lista-actas');
     lista.innerHTML = '';
-    
     baseDatosActas.forEach(acta => {
         lista.innerHTML += `
             <li class="collection-item avatar">
@@ -106,9 +149,6 @@ function renderizarActas() {
     });
 }
 
-// ==========================================
-// 4. MÓDULO DE FORO (Usando LocalStorage para mantener datos)
-// ==========================================
 function obtenerPropuestas() {
     const datos = localStorage.getItem('foroDigital');
     return datos ? JSON.parse(datos) : [
@@ -120,8 +160,6 @@ function renderizarForo() {
     const contenedor = document.getElementById('lista-propuestas');
     contenedor.innerHTML = '';
     const propuestas = obtenerPropuestas();
-
-    // Ordenar por votos
     propuestas.sort((a, b) => b.votos - a.votos).forEach((prop, index) => {
         contenedor.innerHTML += `
             <div class="card">
@@ -140,13 +178,11 @@ function renderizarForo() {
 function agregarPropuesta() {
     const titulo = document.getElementById('titulo-propuesta').value;
     const texto = document.getElementById('texto-propuesta').value;
-    
     if(titulo === "" || texto === "") return alert("Completa los campos");
 
     const propuestas = obtenerPropuestas();
     propuestas.push({ titulo, texto, votos: 0 });
     localStorage.setItem('foroDigital', JSON.stringify(propuestas));
-    
     document.getElementById('titulo-propuesta').value = "";
     document.getElementById('texto-propuesta').value = "";
     renderizarForo();
