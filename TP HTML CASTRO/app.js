@@ -1,5 +1,5 @@
 // ==========================================
-// 1. SISTEMA DE NAVEGACIÓN (Router SPA)
+// 1. SISTEMA DE NAVEGACIÓN
 // ==========================================
 function navegar(idVista) {
     document.querySelectorAll('.vista').forEach(seccion => {
@@ -7,65 +7,108 @@ function navegar(idVista) {
     });
     document.getElementById(`vista-${idVista}`).classList.add('activa');
 
-    if (idVista === 'actas') renderizarActas();
-    if (idVista === 'foro') renderizarForo();
-    if (idVista === 'admin-panel') renderizarResultados();
+    if (idVista === 'admin-panel') renderizarPanelAdmin();
 }
 
 // ==========================================
-// 2. MÓDULO ELECTORAL - ADMIN
+// 2. GESTIÓN DE LISTAS Y URNA (Base de datos local)
 // ==========================================
 const CREDENCIAL_ADMIN = "ADMIN-IPEM38";
+const padronSimulado = ["ALUMNO-1", "ALUMNO-2", "ALUMNO-3", "ALUMNO-4", "ALUMNO-5"];
 
+// Función vital: Si no hay listas guardadas, crea la de Voto en Blanco por defecto.
+function obtenerListas() {
+    let listas = JSON.parse(localStorage.getItem('listasOficiales'));
+    if (!listas) {
+        listas = [{ id: 99, numero: "0", nombre: "Voto en Blanco", presi: "Ninguno", color: "grey" }];
+        localStorage.setItem('listasOficiales', JSON.stringify(listas));
+    }
+    return listas;
+}
+
+// ==========================================
+// 3. MÓDULO ELECTORAL - ADMIN
+// ==========================================
 function loginAdmin() {
     const input = document.getElementById('codigo-admin').value.trim();
-    const error = document.getElementById('error-admin');
-    
     if (input === CREDENCIAL_ADMIN) {
-        error.style.display = "none";
-        document.getElementById('codigo-admin').value = ""; // limpia el campo
+        document.getElementById('error-admin').style.display = "none";
+        document.getElementById('codigo-admin').value = "";
         navegar('admin-panel');
     } else {
-        error.style.display = "block";
+        document.getElementById('error-admin').style.display = "block";
     }
 }
 
-function renderizarResultados() {
-    // Cuenta cuántos votos totales hay en LocalStorage (simulando la DB)
+function agregarLista() {
+    const numero = document.getElementById('input-numero').value;
+    const nombre = document.getElementById('input-nombre-partido').value;
+    const presi = document.getElementById('input-presidente').value;
+    const color = document.getElementById('input-color').value;
+
+    if (!numero || !nombre || !presi || !color) {
+        alert("Por favor, completa los cuatro campos para oficializar la lista.");
+        return;
+    }
+
+    const listas = obtenerListas();
+    // Genera un ID único para uso interno
+    const nuevoId = new Date().getTime(); 
+    
+    listas.push({ id: nuevoId, numero: numero, nombre: nombre, presi: presi, color: color });
+    localStorage.setItem('listasOficiales', JSON.stringify(listas));
+    
+    // Limpiar formulario
+    document.getElementById('input-numero').value = "";
+    document.getElementById('input-nombre-partido').value = "";
+    document.getElementById('input-presidente').value = "";
+    document.getElementById('input-color').value = "";
+
+    renderizarPanelAdmin();
+    alert("Lista " + numero + " cargada con éxito en el sistema.");
+}
+
+function renderizarPanelAdmin() {
+    // 1. Mostrar estado de la urna
     const votosStorage = JSON.parse(localStorage.getItem('votosEleccion')) || [];
     document.getElementById('contador-votos').innerText = votosStorage.length;
 
-    // Cuenta votos por lista
-    const contenedorResultados = document.getElementById('resultados-lista');
-    contenedorResultados.innerHTML = "";
+    // 2. Mostrar las listas configuradas
+    const contenedorListas = document.getElementById('admin-listas-activas');
+    contenedorListas.innerHTML = "";
+    const listas = obtenerListas();
 
-    listasElectorales.forEach(lista => {
-        // Filtra y cuenta cuántos votos tiene esta lista
-        const cantidad = votosStorage.filter(voto => voto === lista.id).length;
-        contenedorResultados.innerHTML += `
-            <li class="collection-item">
-                <span class="title"><strong>${lista.nombre}</strong></span>
-                <span class="badge blue white-text">${cantidad} votos</span>
-            </li>
+    listas.forEach(lista => {
+        // Calcula los votos de esa lista
+        const cantVotos = votosStorage.filter(v => v === lista.id).length;
+        
+        contenedorListas.innerHTML += `
+            <div class="boleta-preview ${lista.color} darken-1">
+                <strong>Lista ${lista.numero} - ${lista.nombre}</strong><br>
+                Candidato: ${lista.presi}
+                <span class="badge white black-text right">${cantVotos} VOTOS</span>
+            </div>
         `;
     });
 }
 
-// ==========================================
-// 3. MÓDULO ELECTORAL - TERMINAL (Cuarto Oscuro)
-// ==========================================
-const padronSimulado = ["ALUMNO-1", "ALUMNO-2", "ALUMNO-3"];
-let alumnosQueYaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
+function resetearUrna() {
+    const seguro = confirm("⚠️ ATENCIÓN: Esto borrará todas las listas creadas, vaciará la urna y pondrá el padrón en cero. ¿Estás seguro?");
+    if (seguro) {
+        localStorage.removeItem('listasOficiales');
+        localStorage.removeItem('votosEleccion');
+        localStorage.removeItem('votantesRegistrados');
+        renderizarPanelAdmin();
+    }
+}
 
-const listasElectorales = [
-    { id: 1, nombre: "Frente Estudiantil Unido", presi: "Ana García", color: "red" },
-    { id: 2, nombre: "Renovación Secundaria", presi: "Martín López", color: "green" },
-    { id: 3, nombre: "Voto en Blanco", presi: "-", color: "grey" }
-];
-
+// ==========================================
+// 4. MÓDULO ELECTORAL - TERMINAL (Cuarto Oscuro)
+// ==========================================
 function iniciarVotacion() {
     const codigo = document.getElementById('codigo-alumno').value.trim().toUpperCase();
     const msjError = document.getElementById('error-login');
+    let alumnosQueYaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
 
     if (!padronSimulado.includes(codigo)) {
         msjError.innerText = "Código de padrón inválido.";
@@ -79,22 +122,23 @@ function iniciarVotacion() {
         return;
     }
 
-    // Validado -> Entra al cuarto oscuro
     msjError.style.display = "none";
     document.getElementById('login-votante').style.display = "none";
     document.getElementById('pantalla-boletas').style.display = "block";
-    renderizarBoletas(codigo);
+    renderizarBoletasVotante(codigo);
 }
 
-function renderizarBoletas(codigoAlumno) {
+function renderizarBoletasVotante(codigoAlumno) {
     const contenedor = document.getElementById('contenedor-listas');
     contenedor.innerHTML = '';
+    const listas = obtenerListas();
 
-    listasElectorales.forEach(lista => {
+    listas.forEach(lista => {
         contenedor.innerHTML += `
             <div class="col s12 m4">
                 <div class="card ${lista.color} darken-2 white-text center-align" style="cursor:pointer;" onclick="emitirVoto(${lista.id}, '${codigoAlumno}')">
                     <div class="card-content">
+                        <h5>Lista ${lista.numero}</h5>
                         <h4>${lista.nombre}</h4>
                         <p>Presidente: ${lista.presi}</p>
                         <br>
@@ -108,89 +152,21 @@ function renderizarBoletas(codigoAlumno) {
 
 function emitirVoto(idLista, codigoAlumno) {
     if (confirm("¿Confirmas tu voto?")) {
-        // 1. Guardar que el alumno votó (Para que no vuelva a entrar)
+        // 1. Guardar que el alumno votó
+        let alumnosQueYaVotaron = JSON.parse(localStorage.getItem('votantesRegistrados')) || [];
         alumnosQueYaVotaron.push(codigoAlumno);
         localStorage.setItem('votantesRegistrados', JSON.stringify(alumnosQueYaVotaron));
 
-        // 2. Guardar el voto en la "Urna" de forma anónima (Solo el ID de la lista)
+        // 2. Guardar el voto anónimo en la urna
         const votosUrna = JSON.parse(localStorage.getItem('votosEleccion')) || [];
         votosUrna.push(idLista);
         localStorage.setItem('votosEleccion', JSON.stringify(votosUrna));
 
         alert("¡Voto registrado en la urna digital!");
         
-        // 3. Resetear para el siguiente alumno
+        // 3. Reset
         document.getElementById('pantalla-boletas').style.display = "none";
         document.getElementById('login-votante').style.display = "block";
         document.getElementById('codigo-alumno').value = "";
     }
-}
-
-// ==========================================
-// 4. MÓDULOS ACTAS Y FORO (Sin cambios mayores)
-// ==========================================
-const baseDatosActas = [
-    { fecha: "15/05/2026", titulo: "Asamblea Conformación Junta Electoral", lugar: "SUM" },
-    { fecha: "02/06/2026", titulo: "Presupuesto Bufet 2do Trimestre", lugar: "Aula 4" }
-];
-
-function renderizarActas() {
-    const lista = document.getElementById('lista-actas');
-    lista.innerHTML = '';
-    baseDatosActas.forEach(acta => {
-        lista.innerHTML += `
-            <li class="collection-item avatar">
-                <i class="material-icons circle blue">description</i>
-                <span class="title"><strong>${acta.titulo}</strong></span>
-                <p>${acta.fecha} - Lugar: ${acta.lugar}</p>
-                <a href="#!" class="secondary-content"><i class="material-icons">file_download</i></a>
-            </li>
-        `;
-    });
-}
-
-function obtenerPropuestas() {
-    const datos = localStorage.getItem('foroDigital');
-    return datos ? JSON.parse(datos) : [
-        { titulo: "Más tachos de reciclaje", texto: "Necesitamos separar la basura en los patios.", votos: 5 }
-    ];
-}
-
-function renderizarForo() {
-    const contenedor = document.getElementById('lista-propuestas');
-    contenedor.innerHTML = '';
-    const propuestas = obtenerPropuestas();
-    propuestas.sort((a, b) => b.votos - a.votos).forEach((prop, index) => {
-        contenedor.innerHTML += `
-            <div class="card">
-                <div class="card-content">
-                    <span class="card-title">${prop.titulo} <span class="badge blue white-text">${prop.votos} votos</span></span>
-                    <p>${prop.texto}</p>
-                </div>
-                <div class="card-action">
-                    <button class="btn-small blue" onclick="votarPropuesta(${index})">Apoyar (+1)</button>
-                </div>
-            </div>
-        `;
-    });
-}
-
-function agregarPropuesta() {
-    const titulo = document.getElementById('titulo-propuesta').value;
-    const texto = document.getElementById('texto-propuesta').value;
-    if(titulo === "" || texto === "") return alert("Completa los campos");
-
-    const propuestas = obtenerPropuestas();
-    propuestas.push({ titulo, texto, votos: 0 });
-    localStorage.setItem('foroDigital', JSON.stringify(propuestas));
-    document.getElementById('titulo-propuesta').value = "";
-    document.getElementById('texto-propuesta').value = "";
-    renderizarForo();
-}
-
-function votarPropuesta(index) {
-    const propuestas = obtenerPropuestas();
-    propuestas[index].votos++;
-    localStorage.setItem('foroDigital', JSON.stringify(propuestas));
-    renderizarForo();
 }
